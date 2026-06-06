@@ -1,0 +1,15 @@
+src
+public
+node_modules
+dist-demo
+.vscode
+.idea
+index.html
+vite.config.ts
+tsconfig.json
+tsconfig.node.json
+tailwind.config.js
+postcss.config.js
+.gitignore
+*.log
+.DS_Store
