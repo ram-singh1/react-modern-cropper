@@ -29,7 +29,7 @@ export function RotateSlider() {
       />
 
       <div className="grid grid-cols-4 gap-2">
-        <IconButton label="-90°" onClick={() => (setRotation(rotation), rotate90())}>
+        <IconButton label="-90°" onClick={() => rotate90(-1)}>
           <RotateCcw className="h-4 w-4" />
         </IconButton>
         <IconButton label="+90°" onClick={rotate90}>

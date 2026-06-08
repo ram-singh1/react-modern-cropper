@@ -22,18 +22,21 @@ import { ExportPreviewModal } from './ExportPreviewModal'
 import { LoadingOverlay } from '@/components/common/LoadingOverlay'
 import { ThemeToggle } from '@/components/common/ThemeToggle'
 
-export function Cropper({
-  src,
-  aspectRatio = null,
-  shape = 'rect',
-  onCrop,
-  onImageLoad,
-  defaultTheme = 'dark',
-  disableAutoCrop = false,
-  enablePaste = true,
-  defaultCompression,
-  className,
-}: CropperProps) {
+export function Cropper(props: CropperProps) {
+  const {
+    src,
+    aspectRatio,
+    shape = 'rect',
+    onCrop,
+    onImageLoad,
+    defaultTheme = 'dark',
+    disableAutoCrop = false,
+    enablePaste = true,
+    defaultCompression,
+    className,
+  } = props
+  const hasControlledSrc = Object.prototype.hasOwnProperty.call(props, 'src')
+
   const imageSrc = useCropStore((s) => s.imageSrc)
   const theme = useCropStore((s) => s.theme)
   const isLoading = useCropStore((s) => s.isLoading)
@@ -58,21 +61,27 @@ export function Cropper({
   // Apply initial props once.
   useEffect(() => {
     setTheme(defaultTheme)
-    setCropShape(shape)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
-    if (src) loadFromSrc(src).catch((e) => console.error(e))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [src])
+    setCropShape(shape)
+  }, [setCropShape, shape])
 
   useEffect(() => {
-    if (aspectRatio !== undefined && aspectRatio !== null) {
+    if (!hasControlledSrc) return
+    if (src) {
+      loadFromSrc(src).catch((e) => console.error(e))
+    } else {
+      clearImage()
+    }
+  }, [clearImage, hasControlledSrc, loadFromSrc, src])
+
+  useEffect(() => {
+    if (aspectRatio !== undefined) {
       setAspectRatio(aspectRatio)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aspectRatio])
+  }, [aspectRatio, setAspectRatio])
 
   return (
     <div className={cn(theme === 'dark' ? 'dark' : '', className)}>

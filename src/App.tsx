@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Sparkles } from 'lucide-react'
 import { Cropper } from '@/components/cropper/Cropper'
+import { useCropStore } from '@/store/cropStore'
 import type { CropResult } from '@/types'
 
 const SAMPLE =
@@ -9,6 +10,13 @@ const SAMPLE =
 export default function App() {
   const [lastCrop, setLastCrop] = useState<CropResult | null>(null)
   const [src, setSrc] = useState<string | undefined>(undefined)
+  const clearImage = useCropStore((s) => s.clearImage)
+
+  const clearEditor = () => {
+    setSrc(undefined)
+    setLastCrop(null)
+    clearImage()
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-neutral-950 px-4 py-10 text-white">
@@ -44,7 +52,7 @@ export default function App() {
             </button>
             <button
               type="button"
-              onClick={() => setSrc(undefined)}
+              onClick={clearEditor}
               className="rounded-xl border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white/80 backdrop-blur transition hover:bg-white/10"
             >
               Clear

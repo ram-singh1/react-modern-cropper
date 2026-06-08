@@ -45,25 +45,25 @@ export function useKeyboardShortcuts(enabled = true) {
       switch (e.key) {
         case 'ArrowLeft':
           e.preventDefault()
-          s.setCrop({ ...s.crop, x: s.crop.x - step })
+          s.setCrop({ ...s.crop, x: s.crop.x - step }, true)
           break
         case 'ArrowRight':
           e.preventDefault()
-          s.setCrop({ ...s.crop, x: s.crop.x + step })
+          s.setCrop({ ...s.crop, x: s.crop.x + step }, true)
           break
         case 'ArrowUp':
           e.preventDefault()
-          s.setCrop({ ...s.crop, y: s.crop.y - step })
+          s.setCrop({ ...s.crop, y: s.crop.y - step }, true)
           break
         case 'ArrowDown':
           e.preventDefault()
-          s.setCrop({ ...s.crop, y: s.crop.y + step })
+          s.setCrop({ ...s.crop, y: s.crop.y + step }, true)
           break
         case '[':
-          s.setRotation(s.rotation - 1)
+          s.setRotation(s.rotation - 1, true)
           break
         case ']':
-          s.setRotation(s.rotation + 1)
+          s.setRotation(s.rotation + 1, true)
           break
         case 'r':
         case 'R':
@@ -79,11 +79,11 @@ export function useKeyboardShortcuts(enabled = true) {
           break
         case '+':
         case '=':
-          s.setZoom(s.zoom + 0.1)
+          s.setZoom(s.zoom + 0.1, true)
           break
         case '-':
         case '_':
-          s.setZoom(s.zoom - 0.1)
+          s.setZoom(s.zoom - 0.1, true)
           break
         case '0':
           s.reset()

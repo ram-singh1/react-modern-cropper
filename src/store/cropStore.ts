@@ -19,6 +19,7 @@ export interface HistorySnapshot {
   baseAdjustments: Adjustments
   filterId: FilterPresetId
   aspectRatio: number | null
+  aspectLocked: boolean
 }
 
 export interface CropState {
@@ -56,6 +57,7 @@ export interface CropState {
   // History
   past: HistorySnapshot[]
   future: HistorySnapshot[]
+  pendingHistory: HistorySnapshot | null
 
   // Derived
   effectiveAdjustments: () => Adjustments
@@ -65,12 +67,12 @@ export interface CropState {
   clearImage: () => void
   setStageSize: (w: number, h: number) => void
   setCrop: (crop: CropRect, record?: boolean) => void
-  setRotation: (deg: number) => void
-  rotate90: () => void
+  setRotation: (deg: number, record?: boolean) => void
+  rotate90: (direction?: 1 | -1) => void
   flipHorizontal: () => void
   flipVertical: () => void
-  setZoom: (zoom: number) => void
-  setBaseAdjustment: (key: keyof Adjustments, value: number) => void
+  setZoom: (zoom: number, record?: boolean) => void
+  setBaseAdjustment: (key: keyof Adjustments, value: number, record?: boolean) => void
   resetAdjustments: () => void
   setFilter: (id: FilterPresetId) => void
   setAspectRatio: (ratio: number | null) => void
@@ -95,10 +97,58 @@ function snapshot(s: CropState): HistorySnapshot {
     baseAdjustments: { ...s.baseAdjustments },
     filterId: s.filterId,
     aspectRatio: s.aspectRatio,
+    aspectLocked: s.aspectLocked,
   }
 }
 
 const MAX_HISTORY = 50
+
+function pushHistory(
+  past: HistorySnapshot[],
+  next: HistorySnapshot,
+): HistorySnapshot[] {
+  return [...past, next].slice(-MAX_HISTORY)
+}
+
+function cropEquals(a: CropRect, b: CropRect): boolean {
+  return (
+    a.x === b.x &&
+    a.y === b.y &&
+    a.width === b.width &&
+    a.height === b.height
+  )
+}
+
+function adjustmentsEqual(a: Adjustments, b: Adjustments): boolean {
+  return (Object.keys(a) as (keyof Adjustments)[]).every((key) => a[key] === b[key])
+}
+
+function matchesCurrent(s: CropState, h: HistorySnapshot): boolean {
+  return (
+    cropEquals(s.crop, h.crop) &&
+    s.rotation === h.rotation &&
+    s.flipH === h.flipH &&
+    s.flipV === h.flipV &&
+    s.zoom === h.zoom &&
+    adjustmentsEqual(s.baseAdjustments, h.baseAdjustments) &&
+    s.filterId === h.filterId &&
+    s.aspectRatio === h.aspectRatio &&
+    s.aspectLocked === h.aspectLocked
+  )
+}
+
+function settlePending(s: CropState): HistorySnapshot[] {
+  if (!s.pendingHistory || matchesCurrent(s, s.pendingHistory)) return s.past
+  return pushHistory(s.past, s.pendingHistory)
+}
+
+function recordCurrent(s: CropState): HistorySnapshot[] {
+  return pushHistory(settlePending(s), snapshot(s))
+}
+
+function normalizeRotation(deg: number): number {
+  return ((((deg + 180) % 360) + 360) % 360) - 180
+}
 
 export const useCropStore = create<CropState>((set, get) => ({
   imageSrc: null,
@@ -127,6 +177,7 @@ export const useCropStore = create<CropState>((set, get) => ({
 
   past: [],
   future: [],
+  pendingHistory: null,
 
   effectiveAdjustments: () => {
     const { baseAdjustments, filterId } = get()
@@ -148,6 +199,7 @@ export const useCropStore = create<CropState>((set, get) => ({
       zoom: 1,
       past: [],
       future: [],
+      pendingHistory: null,
     })),
 
   clearImage: () =>
@@ -158,6 +210,7 @@ export const useCropStore = create<CropState>((set, get) => ({
       naturalHeight: 0,
       past: [],
       future: [],
+      pendingHistory: null,
     })),
 
   setStageSize: (w, h) => set(() => ({ stageWidth: w, stageHeight: h })),
@@ -170,33 +223,51 @@ export const useCropStore = create<CropState>((set, get) => ({
       s.stageWidth,
       s.stageHeight,
     )
+    if (cropEquals(s.crop, constrained)) return
     if (record) {
       set({
         crop: constrained,
-        past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+        past: recordCurrent(s),
         future: [],
+        pendingHistory: null,
       })
     } else {
-      set({ crop: constrained })
+      set({
+        crop: constrained,
+        pendingHistory: s.pendingHistory ?? snapshot(s),
+        future: [],
+      })
     }
   },
 
-  setRotation: (deg) => set({ rotation: clamp(deg, -180, 180) }),
+  setRotation: (deg, record = false) => {
+    const s = get()
+    const rotation = clamp(deg, -180, 180)
+    if (s.rotation === rotation) return
+    set({
+      rotation,
+      past: record ? recordCurrent(s) : s.past,
+      future: [],
+      pendingHistory: record ? null : s.pendingHistory ?? snapshot(s),
+    })
+  },
 
-  rotate90: () => {
+  rotate90: (direction = 1) => {
     const s = get()
     set({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+      past: recordCurrent(s),
       future: [],
-      rotation: ((s.rotation + 90 + 180) % 360) - 180,
+      pendingHistory: null,
+      rotation: normalizeRotation(s.rotation + 90 * direction),
     })
   },
 
   flipHorizontal: () => {
     const s = get()
     set({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+      past: recordCurrent(s),
       future: [],
+      pendingHistory: null,
       flipH: !s.flipH,
     })
   },
@@ -204,31 +275,60 @@ export const useCropStore = create<CropState>((set, get) => ({
   flipVertical: () => {
     const s = get()
     set({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+      past: recordCurrent(s),
       future: [],
+      pendingHistory: null,
       flipV: !s.flipV,
     })
   },
 
-  setZoom: (zoom) => set({ zoom: clamp(zoom, 1, 4) }),
-
-  setBaseAdjustment: (key, value) =>
-    set((s) => ({ baseAdjustments: { ...s.baseAdjustments, [key]: value } })),
-
-  resetAdjustments: () =>
-    set((s) => ({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+  setZoom: (zoom, record = false) => {
+    const s = get()
+    const next = clamp(zoom, 1, 4)
+    if (s.zoom === next) return
+    set({
+      zoom: next,
+      past: record ? recordCurrent(s) : s.past,
       future: [],
+      pendingHistory: record ? null : s.pendingHistory ?? snapshot(s),
+    })
+  },
+
+  setBaseAdjustment: (key, value, record = false) => {
+    const s = get()
+    if (s.baseAdjustments[key] === value) return
+    set({
+      baseAdjustments: { ...s.baseAdjustments, [key]: value },
+      past: record ? recordCurrent(s) : s.past,
+      future: [],
+      pendingHistory: record ? null : s.pendingHistory ?? snapshot(s),
+    })
+  },
+
+  resetAdjustments: () => {
+    const s = get()
+    if (s.filterId === 'none' && adjustmentsEqual(s.baseAdjustments, DEFAULT_ADJUSTMENTS)) {
+      return
+    }
+    set({
+      past: recordCurrent(s),
+      future: [],
+      pendingHistory: null,
       baseAdjustments: { ...DEFAULT_ADJUSTMENTS },
       filterId: 'none',
-    })),
+    })
+  },
 
-  setFilter: (id) =>
-    set((s) => ({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+  setFilter: (id) => {
+    const s = get()
+    if (s.filterId === id) return
+    set({
+      past: recordCurrent(s),
       future: [],
+      pendingHistory: null,
       filterId: id,
-    })),
+    })
+  },
 
   setAspectRatio: (ratio) => {
     const s = get()
@@ -236,17 +336,32 @@ export const useCropStore = create<CropState>((set, get) => ({
       ratio !== null
         ? centeredCrop(ratio, s.stageWidth, s.stageHeight)
         : s.crop
+    if (
+      s.aspectRatio === ratio &&
+      (ratio === null || cropEquals(s.crop, nextCrop))
+    ) {
+      return
+    }
     set({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+      past: recordCurrent(s),
       future: [],
+      pendingHistory: null,
       aspectRatio: ratio,
-      aspectLocked: ratio !== null ? true : s.aspectLocked,
+      aspectLocked: ratio !== null,
       crop: ratio !== null ? nextCrop : s.crop,
     })
   },
 
-  toggleAspectLock: () =>
-    set((s) => ({ aspectLocked: s.aspectRatio !== null ? !s.aspectLocked : false })),
+  toggleAspectLock: () => {
+    const s = get()
+    if (s.aspectRatio === null) return
+    set({
+      past: recordCurrent(s),
+      future: [],
+      pendingHistory: null,
+      aspectLocked: !s.aspectLocked,
+    })
+  },
 
   setCropShape: (shape) => set({ cropShape: shape }),
 
@@ -258,8 +373,9 @@ export const useCropStore = create<CropState>((set, get) => ({
 
   reset: () =>
     set((s) => ({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+      past: recordCurrent(s),
       future: [],
+      pendingHistory: null,
       crop: { x: 0.05, y: 0.05, width: 0.9, height: 0.9 },
       rotation: 0,
       flipH: false,
@@ -273,17 +389,27 @@ export const useCropStore = create<CropState>((set, get) => ({
 
   commit: () =>
     set((s) => ({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+      past: settlePending(s),
       future: [],
+      pendingHistory: null,
     })),
 
   undo: () => {
     const s = get()
+    if (s.pendingHistory) {
+      set({
+        ...s.pendingHistory,
+        future: [snapshot(s), ...s.future].slice(0, MAX_HISTORY),
+        pendingHistory: null,
+      })
+      return
+    }
     if (s.past.length === 0) return
     const previous = s.past[s.past.length - 1]
     set({
       past: s.past.slice(0, -1),
       future: [snapshot(s), ...s.future].slice(0, MAX_HISTORY),
+      pendingHistory: null,
       ...previous,
     })
   },
@@ -293,8 +419,9 @@ export const useCropStore = create<CropState>((set, get) => ({
     if (s.future.length === 0) return
     const next = s.future[0]
     set({
-      past: [...s.past, snapshot(s)].slice(-MAX_HISTORY),
+      past: pushHistory(s.past, snapshot(s)),
       future: s.future.slice(1),
+      pendingHistory: null,
       ...next,
     })
   },
