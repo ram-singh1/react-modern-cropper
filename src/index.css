@@ -6,12 +6,19 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light dark;
 
     /* Accent gradient — override these on any ancestor to re-theme. */
     --rac-accent-from: #6366f1;
     --rac-accent-via: #8b5cf6;
     --rac-accent-to: #d946ef;
+    
+    /* Custom track color for slider */
+    --rac-slider-track: rgba(0, 0, 0, 0.1);
+  }
+
+  .dark {
+    --rac-slider-track: rgba(255, 255, 255, 0.15);
   }
 
   * {
@@ -22,14 +29,24 @@
 @layer components {
   /* Frosted-glass surface used across panels. */
   .glass {
-    @apply border border-white/10 bg-white/[0.04] backdrop-blur-xl;
+    @apply border border-black/10 bg-white/40 backdrop-blur-xl dark:border-white/10 dark:bg-white/[0.04];
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.4),
+      0 8px 32px -12px rgba(0, 0, 0, 0.15);
+  }
+  .dark .glass {
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.06),
       0 8px 32px -12px rgba(0, 0, 0, 0.6);
   }
 
   .glass-strong {
-    @apply border border-white/10 bg-neutral-900/70 backdrop-blur-2xl;
+    @apply border border-black/10 bg-white/70 backdrop-blur-2xl dark:border-white/10 dark:bg-neutral-900/70;
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.5),
+      0 20px 60px -20px rgba(0, 0, 0, 0.2);
+  }
+  .dark .glass-strong {
     box-shadow:
       inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
       0 20px 60px -20px rgba(0, 0, 0, 0.8);

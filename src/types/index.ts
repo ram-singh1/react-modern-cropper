@@ -1,5 +1,5 @@
 /**
- * Public types for react-advanced-cropper.
+ * Public types for react-modern-image-cropper.
  */
 
 /** A crop rectangle, normalized 0..1 relative to the displayed image stage. */
@@ -160,4 +160,36 @@ export interface CropperProps {
   /** Default compression settings applied in the export dialog. */
   defaultCompression?: CompressionOptions
   className?: string
+
+  // UI Configuration Options
+  /** Show the Crop tab. Default true. */
+  showCropTab?: boolean
+  /** Show the Light adjustments tab. Default true. */
+  showAdjustTab?: boolean
+  /** Show the Color adjustments tab. Default true. */
+  showColorTab?: boolean
+  /** Show the Filters tab. Default true. */
+  showFiltersTab?: boolean
+  /** Show the Undo and Redo header buttons. Default true. */
+  showUndoRedo?: boolean
+  /** Show the Reset header button. Default true. */
+  showReset?: boolean
+  /** Show the Theme Toggle button. Default true. */
+  showThemeToggle?: boolean
+  /** Hide tab labels and only show icons to save space. Default false. */
+  onlyIcons?: boolean
+  /** Custom CSS class names for custom button styling */
+  customStyles?: {
+    headerButton?: string
+    tabButton?: string
+    actionButton?: string
+    exportButton?: string
+  }
 }
+
+/** Props for the BulkCompressor component. */
+export interface BulkCompressorProps {
+  /** Default visibility of the image slider. Default true. */
+  showImageSlider?: boolean
+}
+

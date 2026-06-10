@@ -63,7 +63,7 @@ export function Slider({
         }
         className="editor-range"
         style={{
-          background: `linear-gradient(to right, rgb(59 130 246) ${pct}%, rgba(255,255,255,0.15) ${pct}%)`,
+          background: `linear-gradient(to right, rgb(59 130 246) ${pct}%, var(--rac-slider-track) ${pct}%)`,
         }}
       />
     </div>

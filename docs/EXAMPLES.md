@@ -3,7 +3,7 @@
 Copy-paste recipes for common setups. All assume:
 
 ```ts
-import 'react-advanced-cropper/styles.css'
+import 'react-modern-image-cropper/styles.css'
 ```
 
 ---
@@ -11,7 +11,7 @@ import 'react-advanced-cropper/styles.css'
 ## Basic — crop & get a Blob
 
 ```tsx
-import { Cropper, type CropResult } from 'react-advanced-cropper'
+import { Cropper, type CropResult } from 'react-modern-image-cropper'
 
 export function Editor() {
   const handleCrop = (r: CropResult) => {
@@ -31,7 +31,7 @@ export function Editor() {
 ## Upload the cropped result to a server
 
 ```tsx
-import { Cropper, filenameFor, type CropResult } from 'react-advanced-cropper'
+import { Cropper, filenameFor, type CropResult } from 'react-modern-image-cropper'
 
 function UploadEditor() {
   const upload = async (r: CropResult) => {
@@ -62,7 +62,7 @@ function UploadEditor() {
 ## Compress on upload — no cropping UI
 
 ```tsx
-import { useImageCompression } from 'react-advanced-cropper'
+import { useImageCompression } from 'react-modern-image-cropper'
 
 function FileInput() {
   const { compress, compressing } = useImageCompression()
@@ -94,7 +94,7 @@ function FileInput() {
 
 ```tsx
 import { useState } from 'react'
-import { Cropper, useCropStore } from 'react-advanced-cropper'
+import { Cropper, useCropStore } from 'react-modern-image-cropper'
 
 function Controlled() {
   const [src, setSrc] = useState<string>()
@@ -117,7 +117,7 @@ function Controlled() {
 Drive an export from your own button using `useCropState`:
 
 ```tsx
-import { Cropper, useCropState, downloadBlob, filenameFor } from 'react-advanced-cropper'
+import { Cropper, useCropState, downloadBlob, filenameFor } from 'react-modern-image-cropper'
 
 function CustomExportButton() {
   const { exportCrop, imageElement } = useCropState()
@@ -148,8 +148,8 @@ The editor uses `canvas`/`window`, so render it client-side only.
 ```tsx
 // app/edit/CropperClient.tsx
 'use client'
-import { Cropper } from 'react-advanced-cropper'
-import 'react-advanced-cropper/styles.css'
+import { Cropper } from 'react-modern-image-cropper'
+import 'react-modern-image-cropper/styles.css'
 
 export default function CropperClient(props: { src: string }) {
   return <Cropper src={props.src} aspectRatio={4 / 3} />
@@ -169,7 +169,7 @@ If you hit hydration issues, lazy-load it with no SSR:
 ```tsx
 import dynamic from 'next/dynamic'
 const Cropper = dynamic(
-  () => import('react-advanced-cropper').then((m) => m.Cropper),
+  () => import('react-modern-image-cropper').then((m) => m.Cropper),
   { ssr: false },
 )
 ```
@@ -181,8 +181,8 @@ const Cropper = dynamic(
 No special config — import and go:
 
 ```tsx
-import { Cropper } from 'react-advanced-cropper'
-import 'react-advanced-cropper/styles.css'
+import { Cropper } from 'react-modern-image-cropper'
+import 'react-modern-image-cropper/styles.css'
 
 export default function App() {
   return <div style={{ height: '100vh' }}><Cropper /></div>
@@ -215,8 +215,8 @@ import {
   CropShapeToggle,
   useCropState,
   useImageLoader,
-} from 'react-advanced-cropper'
-import 'react-advanced-cropper/styles.css'
+} from 'react-modern-image-cropper'
+import 'react-modern-image-cropper/styles.css'
 
 function MyEditor() {
   const { loadFromFile } = useImageLoader()

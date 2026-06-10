@@ -1,10 +1,10 @@
 <div align="center">
 
-# react-advanced-cropper
+# react-modern-image-cropper
 
 **Modern, feature-rich React image cropper** with AI auto-crop, smart compression, a premium glassmorphic UI, mobile gestures, and professional editing tools.
 
-[![npm version](https://img.shields.io/badge/npm-v0.1.0-6366f1)](https://www.npmjs.com/package/react-advanced-cropper)
+[![npm version](https://img.shields.io/badge/npm-v0.1.0-6366f1)](https://www.npmjs.com/package/react-modern-image-cropper)
 [![license](https://img.shields.io/badge/license-MIT-22c55e)](./LICENSE)
 [![types](https://img.shields.io/badge/types-included-3178c6)](./dist/index.d.ts)
 ![react](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)
@@ -39,11 +39,11 @@
 ## 📦 Installation
 
 ```bash
-npm install react-advanced-cropper
+npm install react-modern-image-cropper
 # or
-yarn add react-advanced-cropper
+yarn add react-modern-image-cropper
 # or
-pnpm add react-advanced-cropper
+pnpm add react-modern-image-cropper
 ```
 
 `react` and `react-dom` (v18 **or** v19) are peer dependencies — you almost
@@ -55,7 +55,7 @@ The component ships a single prebuilt stylesheet. Import it in your app entry
 (e.g. `main.tsx`, `App.tsx`, or `_app.tsx`):
 
 ```ts
-import 'react-advanced-cropper/styles.css'
+import 'react-modern-image-cropper/styles.css'
 ```
 
 > The stylesheet is self-contained (compiled Tailwind) — you do **not** need
@@ -66,8 +66,8 @@ import 'react-advanced-cropper/styles.css'
 ## 🚀 Quick start
 
 ```tsx
-import { Cropper } from 'react-advanced-cropper'
-import 'react-advanced-cropper/styles.css'
+import { Cropper } from 'react-modern-image-cropper'
+import 'react-modern-image-cropper/styles.css'
 
 export default function App() {
   return (
@@ -106,6 +106,15 @@ editor: upload/drag/paste an image, crop, adjust, filter, and export.
 | `onCrop`             | `(result: CropResult) => void`      | —         | Fired when the user exports/downloads.                            |
 | `onImageLoad`        | `(image: HTMLImageElement) => void` | —         | Fired whenever a new image is loaded.                             |
 | `className`          | `string`                            | —         | Extra class on the outer wrapper.                                 |
+| `showCropTab`        | `boolean`                           | `true`    | Show the Crop tab in the toolbar.                                 |
+| `showAdjustTab`      | `boolean`                           | `true`    | Show the Light adjustments tab.                                   |
+| `showColorTab`       | `boolean`                           | `true`    | Show the Color adjustments tab.                                   |
+| `showFiltersTab`     | `boolean`                           | `true`    | Show the Filters tab.                                             |
+| `showUndoRedo`       | `boolean`                           | `true`    | Show the Undo/Redo buttons in the header.                          |
+| `showReset`          | `boolean`                           | `true`    | Show the Reset button in the header.                              |
+| `showThemeToggle`    | `boolean`                           | `true`    | Show the Theme Toggle button in the header.                        |
+| `onlyIcons`          | `boolean`                           | `false`   | Hide tab labels in the bottom bar and only show icons to save space.|
+| `customStyles`       | `object`                            | —         | Custom CSS classes: `{ headerButton?, tabButton?, actionButton?, exportButton? }`.|
 
 ### The `CropResult` you receive
 
@@ -147,7 +156,7 @@ and the component finds the highest quality that fits. Or pre-configure it:
 **2. Headless** — compress any `File` / `Blob` / URL without the UI:
 
 ```tsx
-import { useImageCompression } from 'react-advanced-cropper'
+import { useImageCompression } from 'react-modern-image-cropper'
 
 function Uploader() {
   const { compress, compressing } = useImageCompression()
@@ -190,6 +199,46 @@ Or call the pure utility directly — `compressImage(source, options)`.
 
 ---
 
+## 📦 Bulk Compressor Component
+
+`react-modern-image-cropper` features a powerful `<BulkCompressor />` component for batch cropping, adjustment filtering, and size-targeted smart compression (supporting files of any size, from KB to multiple MBs, and compressing them to a precise target).
+
+### Key Features
+* **Visual Batch Studio:** Renders an interactive editor stage that lets the user visually adjust the crop frame, aspect ratio, shape, filters, and adjustments on the active image.
+* **Master Synchronization:** Adjusting the crop box framing or color settings on the active image automatically applies the same relative layout and tone adjustments to all images in the queue when processing.
+* **Horizontal Thumbnail Slider:** Displays a scrollable list of uploaded image thumbnails. Users can click any image to load it as the active preview and delete individual items.
+* **Any Target Size (KB & MB):** Accepts arbitrary size targets in both **KB** and **MB** (e.g. `200 KB`, `1.5 MB`), handling original images of all sizes (e.g., 1.3 MB, 8 MB, 476 KB).
+* **Slider Toggle:** The thumbnail slider can be hidden/shown via a UI checkbox or the `showImageSlider` prop.
+
+```tsx
+import { BulkCompressor } from 'react-modern-image-cropper'
+import 'react-modern-image-cropper/styles.css'
+
+function MyComponent() {
+  return <BulkCompressor showImageSlider={true} />
+}
+```
+
+### `<BulkCompressor />` Props
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `showImageSlider` | `boolean` | `true` | Show/hide the horizontal thumbnail slider at the bottom. |
+
+### Free vs. Premium Batch Limits
+
+The component has built-in tier tracking (stored in `localStorage`):
+
+| Limits | Free Tier | Premium Tier |
+| :--- | :--- | :--- |
+| **Max images per batch** | 10 images | 100 images |
+| **Daily batch runs** | 4 batches | Unlimited |
+| **Upgrade Option** | Opens upgrade modal (fully theme-adaptive) | Built-in badge |
+
+*Note: All compression parameters (preset settings, target size, output shape, filters, adjustments, etc.) are exactly the **same** for both Free and Premium tiers. The only differences are the **batch queue size** and **daily batch limits**.*
+
+
+---
+
 ## 🧩 Headless / composable usage
 
 Every building block is exported, and all editor state lives in a single
@@ -204,7 +253,7 @@ import {
   useCropStore,
   useCropState,
   renderCrop,
-} from 'react-advanced-cropper'
+} from 'react-modern-image-cropper'
 
 function MyEditor() {
   const { exportCrop } = useCropState()

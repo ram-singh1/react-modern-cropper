@@ -44,7 +44,7 @@ export function ImageDropZone({ onLoad }: ImageDropZoneProps) {
           'flex w-full max-w-md cursor-pointer flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed px-8 py-16 text-center transition duration-300',
           dragging
             ? 'scale-[1.02] border-brand-400 bg-brand-500/10 shadow-glow-lg'
-            : 'border-white/15 bg-white/[0.03] hover:border-brand-400/40 hover:bg-white/[0.06]',
+            : 'border-black/15 bg-black/[0.03] hover:border-brand-400/40 hover:bg-black/[0.06] dark:border-white/15 dark:bg-white/[0.03] dark:hover:bg-white/[0.06]',
         )}
       >
         <div
@@ -52,7 +52,7 @@ export function ImageDropZone({ onLoad }: ImageDropZoneProps) {
             'flex h-16 w-16 items-center justify-center rounded-2xl transition duration-300',
             dragging
               ? 'scale-110 bg-brand-gradient text-white shadow-glow'
-              : 'bg-gradient-to-br from-white/15 to-white/5 text-white/70',
+              : 'bg-gradient-to-br from-black/15 to-black/5 text-neutral-600 dark:from-white/15 dark:to-white/5 dark:text-white/70',
           )}
         >
           {dragging ? (
@@ -62,10 +62,10 @@ export function ImageDropZone({ onLoad }: ImageDropZoneProps) {
           )}
         </div>
         <div>
-          <p className="text-base font-semibold text-white">
+          <p className="text-base font-semibold text-neutral-800 dark:text-white">
             {dragging ? 'Drop to upload' : 'Drag & drop an image'}
           </p>
-          <p className="mt-1 text-sm text-white/50">
+          <p className="mt-1 text-sm text-neutral-500 dark:text-white/50">
             or click to browse · PNG, JPG, WebP
           </p>
         </div>

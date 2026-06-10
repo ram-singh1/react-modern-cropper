@@ -122,16 +122,33 @@ export function resizeCrop(
 
   if (aspect && stageW > 0 && stageH > 0) {
     const normAspect = (aspect * stageH) / stageW
-    // Drive height from width, anchoring on the handle's fixed corner.
-    const anchorRight = handle.includes('w')
-    const anchorBottom = handle.includes('n')
-    const newHeight = next.width / normAspect
-    if (anchorBottom) {
-      next.y = next.y + next.height - newHeight
-    }
-    next.height = newHeight
-    if (anchorRight) {
-      // already anchored via x adjustments above
+
+    if (handle === 'n' || handle === 's') {
+      // Dragging top or bottom handle: height is the primary driver.
+      const newWidth = next.height * normAspect
+      const centerX = x + width / 2
+      next.x = centerX - newWidth / 2
+      next.width = newWidth
+    } else if (handle === 'e' || handle === 'w') {
+      // Dragging left or right handle: width is the primary driver.
+      const newHeight = next.width / normAspect
+      const centerY = y + height / 2
+      next.y = centerY - newHeight / 2
+      next.height = newHeight
+    } else {
+      // Dragging a corner handle (nw, ne, se, sw): width is primary driver.
+      const anchorLeft = handle.includes('e')
+      const anchorTop = handle.includes('s')
+      const newHeight = next.width / normAspect
+      
+      if (!anchorTop) {
+        next.y = y + height - newHeight
+      }
+      next.height = newHeight
+
+      if (!anchorLeft) {
+        next.x = x + width - next.width
+      }
     }
     next = constrainCrop(next, aspect, stageW, stageH)
   }

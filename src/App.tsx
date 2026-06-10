@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Sparkles } from 'lucide-react'
 import { Cropper } from '@/components/cropper/Cropper'
+import { BulkCompressor } from '@/components/cropper/BulkCompressor'
 import { useCropStore } from '@/store/cropStore'
 import type { CropResult } from '@/types'
 
@@ -8,6 +9,7 @@ const SAMPLE =
   'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=1200&q=80'
 
 export default function App() {
+  const [tab, setTab] = useState<'single' | 'bulk'>('single')
   const [lastCrop, setLastCrop] = useState<CropResult | null>(null)
   const [src, setSrc] = useState<string | undefined>(undefined)
   const clearImage = useCropStore((s) => s.clearImage)
@@ -36,7 +38,7 @@ export default function App() {
             AI-powered · open source · TypeScript
           </div>
           <h1 className="text-gradient text-4xl font-bold tracking-tight sm:text-5xl">
-            react-advanced-cropper
+            react-modern-image-cropper
           </h1>
           <p className="mx-auto mt-3 max-w-md text-sm text-white/50">
             A modern image cropper with AI auto-crop, rotation, filters,
@@ -60,20 +62,52 @@ export default function App() {
           </div>
         </div>
 
-        <Cropper src={src} defaultTheme="dark" onCrop={(r) => setLastCrop(r)} />
-
-        {lastCrop && (
-          <div className="glass rounded-2xl p-4">
-            <p className="mb-2 text-xs font-medium text-white/60">
-              Last export · {lastCrop.width}×{lastCrop.height}px ·{' '}
-              {(lastCrop.blob.size / 1024).toFixed(0)} KB
-            </p>
-            <img
-              src={lastCrop.dataUrl}
-              alt="Result"
-              className="max-h-48 rounded-xl ring-1 ring-white/10"
-            />
+        {/* Tab switcher */}
+        <div className="flex justify-center border-b border-white/10 pb-1">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setTab('single')}
+              className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${
+                tab === 'single'
+                  ? 'border-brand-500 text-brand-300'
+                  : 'border-transparent text-white/60 hover:text-white/80'
+              }`}
+            >
+              Single Editor
+            </button>
+            <button
+              onClick={() => setTab('bulk')}
+              className={`px-4 py-2 text-sm font-semibold border-b-2 transition ${
+                tab === 'bulk'
+                  ? 'border-brand-500 text-brand-300'
+                  : 'border-transparent text-white/60 hover:text-white/80'
+              }`}
+            >
+              Bulk Compressor
+            </button>
           </div>
+        </div>
+
+        {tab === 'single' ? (
+          <>
+            <Cropper src={src} defaultTheme="dark" onCrop={(r) => setLastCrop(r)} />
+
+            {lastCrop && (
+              <div className="glass rounded-2xl p-4">
+                <p className="mb-2 text-xs font-medium text-white/60">
+                  Last export · {lastCrop.width}×{lastCrop.height}px ·{' '}
+                  {(lastCrop.blob.size / 1024).toFixed(0)} KB
+                </p>
+                <img
+                  src={lastCrop.dataUrl}
+                  alt="Result"
+                  className="max-h-48 rounded-xl ring-1 ring-white/10"
+                />
+              </div>
+            )}
+          </>
+        ) : (
+          <BulkCompressor />
         )}
 
         <p className="pb-4 text-center text-[11px] text-white/30">

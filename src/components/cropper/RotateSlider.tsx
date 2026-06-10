@@ -32,7 +32,7 @@ export function RotateSlider() {
         <IconButton label="-90°" onClick={() => rotate90(-1)}>
           <RotateCcw className="h-4 w-4" />
         </IconButton>
-        <IconButton label="+90°" onClick={rotate90}>
+        <IconButton label="+90°" onClick={() => rotate90(1)}>
           <RotateCw className="h-4 w-4" />
         </IconButton>
         <IconButton label="Flip H" active={flipHActive} onClick={flipH}>

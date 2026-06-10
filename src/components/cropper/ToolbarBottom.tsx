@@ -18,8 +18,36 @@ const TABS: { id: TabId; label: string; icon: React.ReactNode }[] = [
   { id: 'filters', label: 'Filters', icon: <Sparkles className="h-4 w-4" /> },
 ]
 
-export function ToolbarBottom() {
-  const [tab, setTab] = useState<TabId>('crop')
+interface ToolbarBottomProps {
+  showCropTab?: boolean
+  showAdjustTab?: boolean
+  showColorTab?: boolean
+  showFiltersTab?: boolean
+  onlyIcons?: boolean
+  customStyles?: {
+    tabButton?: string
+  }
+}
+
+export function ToolbarBottom({
+  showCropTab = true,
+  showAdjustTab = true,
+  showColorTab = true,
+  showFiltersTab = true,
+  onlyIcons = false,
+  customStyles,
+}: ToolbarBottomProps) {
+  const visibleTabs = TABS.filter((t) => {
+    if (t.id === 'crop') return showCropTab
+    if (t.id === 'adjust') return showAdjustTab
+    if (t.id === 'color') return showColorTab
+    if (t.id === 'filters') return showFiltersTab
+    return true
+  })
+
+  const [tab, setTab] = useState<TabId>(() => {
+    return visibleTabs[0]?.id ?? 'crop'
+  })
 
   return (
     <div className="border-t border-white/10 bg-neutral-900/40 backdrop-blur-2xl">
@@ -53,7 +81,7 @@ export function ToolbarBottom() {
 
       {/* Tab bar */}
       <div className="flex items-stretch justify-center gap-1 border-t border-white/5 px-2 py-1.5">
-        {TABS.map((t) => {
+        {visibleTabs.map((t) => {
           const active = tab === t.id
           return (
             <button
@@ -61,8 +89,10 @@ export function ToolbarBottom() {
               type="button"
               onClick={() => setTab(t.id)}
               className={cn(
-                'relative flex flex-1 flex-col items-center gap-1 rounded-lg px-3 py-2 text-[11px] font-medium transition sm:flex-none sm:px-6',
+                'relative flex flex-1 items-center justify-center rounded-lg px-3 py-2 text-[11px] font-medium transition sm:flex-none sm:px-6',
+                !onlyIcons && 'flex-col gap-1',
                 active ? 'text-brand-300' : 'text-white/50 hover:text-white/80',
+                customStyles?.tabButton,
               )}
             >
               {active && (
@@ -73,7 +103,7 @@ export function ToolbarBottom() {
                 />
               )}
               {t.icon}
-              {t.label}
+              {!onlyIcons && t.label}
             </button>
           )
         })}

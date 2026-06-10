@@ -15,6 +15,7 @@ export { ExportPresets, EXPORT_PRESETS } from '@/components/cropper/ExportPreset
 export { ExportPreviewModal } from '@/components/cropper/ExportPreviewModal'
 export { ImageDropZone } from '@/components/cropper/ImageDropZone'
 export { CropShapeToggle } from '@/components/cropper/CropShapeToggle'
+export { BulkCompressor } from '@/components/cropper/BulkCompressor'
 export { LoadingOverlay } from '@/components/common/LoadingOverlay'
 export { ThemeToggle } from '@/components/common/ThemeToggle'
 export { Slider } from '@/components/common/Slider'

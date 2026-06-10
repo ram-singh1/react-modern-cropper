@@ -1,12 +1,12 @@
 # API Reference
 
-Everything `react-advanced-cropper` exports, grouped by category.
+Everything `react-modern-image-cropper` exports, grouped by category.
 
 ```ts
 import {
   // components, hooks, store, utils, types …
-} from 'react-advanced-cropper'
-import 'react-advanced-cropper/styles.css'
+} from 'react-modern-image-cropper'
+import 'react-modern-image-cropper/styles.css'
 ```
 
 ---
@@ -20,6 +20,32 @@ full prop table. Minimal usage:
 
 ```tsx
 <Cropper src={url} aspectRatio={1} shape="round" onCrop={(r) => save(r.blob)} />
+```
+
+#### UI Customization
+
+Control visible features via simple boolean flags:
+- `showCropTab`: Crop & Rotate panel (default: `true`)
+- `showAdjustTab`: Light sliders (default: `true`)
+- `showColorTab`: Advanced tone sliders (default: `true`)
+- `showFiltersTab`: Presets strip (default: `true`)
+- `showUndoRedo`: Undo and Redo actions in header (default: `true`)
+- `showReset`: Reset button in header (default: `true`)
+- `showThemeToggle`: Theme toggle in header (default: `true`)
+- `onlyIcons`: Hide text labels in the tab bar and only show icons (default: `false`)
+
+#### Custom Styles
+
+Pass CSS class overrides using the `customStyles` prop:
+```tsx
+<Cropper
+  customStyles={{
+    headerButton: 'bg-indigo-900 border-indigo-700 hover:bg-indigo-800',
+    tabButton: 'rounded-none hover:bg-white/5',
+    actionButton: 'py-2 font-bold uppercase tracking-wider',
+    exportButton: 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-500/30'
+  }}
+/>
 ```
 
 | Component                 | Purpose                                                     |
@@ -38,12 +64,32 @@ full prop table. Minimal usage:
 | `ExportPresets`           | Format/quality preset buttons (`EXPORT_PRESETS`).          |
 | `ExportPreviewModal`      | The export dialog with live preview + compression.         |
 | `ImageDropZone`           | Drag-and-drop / click-to-upload surface.                   |
+| `BulkCompressor`          | Batch editor & compressor (Free vs. Premium tier limits).   |
 | `LoadingOverlay`          | Spinner overlay (driven by store loading state).           |
 | `ThemeToggle`             | Light/dark switch button.                                  |
 | `Slider`                  | The reusable styled range control.                         |
 
 All composable components read and write the shared store, so they work
 together with no prop wiring — just mount them.
+
+### `<BulkCompressor />`
+
+The batch editor for processing multiple images at once:
+- **Visual Batch Studio:** Renders an interactive editor stage that lets the user visually adjust the crop frame, aspect ratio, shape, filters, and adjustments on the active image.
+- **ZIP Download:** Automatically compresses all uploaded files and packages them into a single `.zip` archive download.
+- **Master Synchronization:** Uses the active preview's crop coordinates, rotation, aspect ratio, shape, adjustments, and preset filters to batch process all images proportionally.
+- **Horizontal Thumbnail Slider:** Shows a list of uploaded image thumbnails. Users can click any thumbnail to make it the active preview, adjusting settings for the entire batch.
+- **Target Size (KB & MB):** Supports setting size thresholds in both KB and MB (e.g. `200 KB` or `1.5 MB`), handling original images of all sizes (e.g. 8 MB, 1.3 MB, etc.) and compressing them down to your size target.
+- **Quota Limiting:**
+  - *Free Tier:* Limit of 10 files per batch, maximum of 4 runs per day.
+  - *Premium Tier:* Limit of 100 files per batch, unlimited daily runs.
+
+#### Props
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `showImageSlider` | `boolean` | `true` | Show or hide the horizontal thumbnail slider at the bottom. |
+
 
 ---
 

@@ -34,6 +34,15 @@ export function Cropper(props: CropperProps) {
     enablePaste = true,
     defaultCompression,
     className,
+    showCropTab = true,
+    showAdjustTab = true,
+    showColorTab = true,
+    showFiltersTab = true,
+    showUndoRedo = true,
+    showReset = true,
+    showThemeToggle = true,
+    onlyIcons = false,
+    customStyles,
   } = props
   const hasControlledSrc = Object.prototype.hasOwnProperty.call(props, 'src')
 
@@ -85,43 +94,50 @@ export function Cropper(props: CropperProps) {
 
   return (
     <div className={cn(theme === 'dark' ? 'dark' : '', className)}>
-      <div className="glass-strong relative flex h-full min-h-[560px] w-full flex-col overflow-hidden rounded-3xl text-white">
+      <div className="glass-strong relative flex h-full min-h-[560px] w-full flex-col overflow-hidden rounded-3xl text-neutral-800 dark:text-white">
         {/* top sheen */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-black/5 dark:via-white/25 to-transparent" />
 
         {/* Header */}
-        <header className="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-3 sm:px-5">
+        <header className="flex items-center justify-between gap-2 border-b border-black/10 dark:border-white/10 px-4 py-3 sm:px-5">
           <div className="flex items-center gap-2.5">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-gradient shadow-glow">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
             <span className="text-sm font-semibold tracking-tight">
-              Advanced Cropper
+              Modern Image Cropper
             </span>
           </div>
 
           <div className="flex items-center gap-1.5">
             {imageSrc && (
               <>
-                <HeaderButton title="Undo (⌘Z)" onClick={undo} disabled={!canUndo}>
-                  <Undo2 className="h-4 w-4" />
-                </HeaderButton>
-                <HeaderButton
-                  title="Redo (⌘⇧Z)"
-                  onClick={redo}
-                  disabled={!canRedo}
-                >
-                  <Redo2 className="h-4 w-4" />
-                </HeaderButton>
-                <HeaderButton title="Reset" onClick={reset}>
-                  <RotateCcw className="h-4 w-4" />
-                </HeaderButton>
-                <HeaderButton title="New image" onClick={clearImage}>
+                {showUndoRedo && (
+                  <>
+                    <HeaderButton title="Undo (⌘Z)" onClick={undo} disabled={!canUndo} className={customStyles?.headerButton}>
+                      <Undo2 className="h-4 w-4" />
+                    </HeaderButton>
+                    <HeaderButton
+                      title="Redo (⌘⇧Z)"
+                      onClick={redo}
+                      disabled={!canRedo}
+                      className={customStyles?.headerButton}
+                    >
+                      <Redo2 className="h-4 w-4" />
+                    </HeaderButton>
+                  </>
+                )}
+                {showReset && (
+                  <HeaderButton title="Reset" onClick={reset} className={customStyles?.headerButton}>
+                    <RotateCcw className="h-4 w-4" />
+                  </HeaderButton>
+                )}
+                <HeaderButton title="New image" onClick={clearImage} className={customStyles?.headerButton}>
                   <ImagePlus className="h-4 w-4" />
                 </HeaderButton>
               </>
             )}
-            <ThemeToggle />
+            {showThemeToggle && <ThemeToggle className={customStyles?.headerButton} />}
           </div>
         </header>
 
@@ -134,14 +150,17 @@ export function Cropper(props: CropperProps) {
         {/* Action bar + toolbar */}
         {imageSrc && (
           <>
-            <div className="flex items-center gap-2 border-t border-white/10 px-4 py-3 sm:px-6">
+            <div className="flex items-center gap-2 border-t border-black/10 dark:border-white/10 px-4 py-3 sm:px-6">
               {!disableAutoCrop && (
                 <motion.button
                   type="button"
                   whileTap={{ scale: 0.97 }}
                   onClick={autoCrop}
                   disabled={detecting}
-                  className="group relative flex items-center gap-2 overflow-hidden rounded-xl border border-brand-400/30 bg-brand-500/10 px-3.5 py-2 text-xs font-semibold text-brand-200 transition hover:bg-brand-500/20 disabled:opacity-60"
+                  className={cn(
+                    "group relative flex items-center gap-2 overflow-hidden rounded-xl border border-brand-400/30 bg-brand-500/10 px-3.5 py-2 text-xs font-semibold text-brand-200 transition hover:bg-brand-500/20 disabled:opacity-60",
+                    customStyles?.actionButton
+                  )}
                 >
                   <span className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
                   <Sparkles className={cn('h-4 w-4', detecting && 'animate-pulse')} />
@@ -154,14 +173,26 @@ export function Cropper(props: CropperProps) {
                 whileTap={{ scale: 0.96 }}
                 whileHover={{ y: -1 }}
                 onClick={() => setExportOpen(true)}
-                className="flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-2 text-sm font-semibold text-white shadow-glow transition hover:brightness-110"
+                className={cn(
+                  "flex items-center gap-2 rounded-xl bg-brand-gradient px-5 py-2 text-sm font-semibold text-white shadow-glow transition hover:brightness-110",
+                  customStyles?.exportButton
+                )}
               >
                 <Download className="h-4 w-4" />
                 Export
               </motion.button>
             </div>
 
-            <ToolbarBottom />
+            {(showCropTab || showAdjustTab || showColorTab || showFiltersTab) && (
+              <ToolbarBottom
+                showCropTab={showCropTab}
+                showAdjustTab={showAdjustTab}
+                showColorTab={showColorTab}
+                showFiltersTab={showFiltersTab}
+                onlyIcons={onlyIcons}
+                customStyles={customStyles}
+              />
+            )}
           </>
         )}
 
@@ -181,11 +212,13 @@ function HeaderButton({
   title,
   onClick,
   disabled,
+  className,
 }: {
   children: React.ReactNode
   title: string
   onClick: () => void
   disabled?: boolean
+  className?: string
 }) {
   return (
     <button
@@ -193,7 +226,10 @@ function HeaderButton({
       title={title}
       onClick={onClick}
       disabled={disabled}
-      className="flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-white/75 transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35"
+      className={cn(
+        "flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 bg-black/5 text-neutral-600 transition hover:bg-black/10 dark:border-white/10 dark:bg-white/5 dark:text-white/75 dark:hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-35",
+        className
+      )}
     >
       {children}
     </button>

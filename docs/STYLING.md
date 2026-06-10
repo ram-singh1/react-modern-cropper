@@ -1,10 +1,10 @@
 # Styling Guide
 
-`react-advanced-cropper` ships one self-contained stylesheet (compiled
+`react-modern-image-cropper` ships one self-contained stylesheet (compiled
 Tailwind). You **don't** need Tailwind in your own project. Import it once:
 
 ```ts
-import 'react-advanced-cropper/styles.css'
+import 'react-modern-image-cropper/styles.css'
 ```
 
 There are four supported ways to customise the look — from least to most
@@ -21,7 +21,7 @@ Set the starting theme with the prop, or flip it at runtime via the store:
 ```
 
 ```ts
-import { useCropStore } from 'react-advanced-cropper'
+import { useCropStore } from 'react-modern-image-cropper'
 
 useCropStore.getState().setTheme('light')   // or toggleTheme()
 ```
@@ -122,7 +122,7 @@ necessary if you're composing the headless primitives with extra utilities.
 export default {
   content: [
     './src/**/*.{ts,tsx}',
-    './node_modules/react-advanced-cropper/dist/**/*.js',
+    './node_modules/react-modern-image-cropper/dist/**/*.js',
   ],
 }
 ```

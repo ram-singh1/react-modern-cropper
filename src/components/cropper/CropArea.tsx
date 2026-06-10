@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import { useCropStore } from '@/store/cropStore'
 import { useMultiTouchGestures } from '@/hooks/useMultiTouchGestures'
 import { buildFilterString } from '@/utils/filters'
@@ -29,8 +30,7 @@ export function CropArea() {
   const setCrop = useCropStore((s) => s.setCrop)
   const setStageSize = useCropStore((s) => s.setStageSize)
   const commit = useCropStore((s) => s.commit)
-  const effective = useCropStore((s) => s.effectiveAdjustments)
-  const adjustments = effective()
+  const adjustments = useCropStore(useShallow((s) => s.effectiveAdjustments()))
 
   const [drag, setDrag] = useState<DragMode>(null)
 
