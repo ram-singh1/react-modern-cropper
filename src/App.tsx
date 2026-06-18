@@ -335,35 +335,192 @@ export default function MyEditor() {
         )}
 
         {activeTab === 'math' && (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="space-y-6 animate-fadeIn pb-12">
+            {/* Header Card */}
             <div className="glass rounded-2xl p-6 border border-white/10">
-              <h2 className="text-lg font-bold mb-3 text-brand-300 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-indigo-400" /> Coordinate Math &amp; Architecture
-              </h2>
-              <p className="text-xs text-neutral-400 mb-6 leading-relaxed">
-                When scaling, rotating, and shifting an image inside a cropping viewport, translating screen drag events back into natural pixel boundaries requires calculating transform matrices relative to the viewport container center.
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                <div>
+                  <h2 className="text-xl font-bold text-brand-300 flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-indigo-400" /> Coordinate Math &amp; Architecture
+                  </h2>
+                  <p className="text-xs text-neutral-400 mt-1 leading-relaxed">
+                    Learn how react-modern-image-cropper handles lossless viewport transforms, coordinate spaces, and frame-accurate video rendering.
+                  </p>
+                </div>
+                <a
+                  href="file:///var/www/html/react-modern-image-cropper/docs/ARCHITECTURE_MATH.md"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 transition text-xs text-indigo-300"
+                >
+                  <BookOpen className="w-3.5 h-3.5" /> Read Math Docs
+                </a>
+              </div>
+
+              {/* Math Intro */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                  <div className="text-brand-300 text-xs font-semibold mb-1">1. Source Space</div>
+                  <p className="text-[11px] text-neutral-400 leading-normal">
+                    The raw image or video pixel boundaries. Range: [0, naturalWidth] × [0, naturalHeight]. Lossless adjustments and presets are drawn directly on this grid.
+                  </p>
+                </div>
+                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                  <div className="text-cyan-400 text-xs font-semibold mb-1">2. Transformed Stage</div>
+                  <p className="text-[11px] text-neutral-400 leading-normal">
+                    Canvas rendering boundaries. Origin translated to center pivot for rotation and zoom. Flipped with negative scaling values.
+                  </p>
+                </div>
+                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4">
+                  <div className="text-emerald-400 text-xs font-semibold mb-1">3. Viewport Space</div>
+                  <p className="text-[11px] text-neutral-400 leading-normal">
+                    Normalized crop box relative to the stage. Dimensions: x, y, width, height &in; [0.0, 1.0]. Resolution independent.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Diagram 1: Coordinate Spaces & Bounding Boxes */}
+            <div className="glass rounded-2xl p-6 border border-white/10">
+              <h3 className="text-sm font-semibold text-white mb-2">1. Coordinate Spaces &amp; Bounding Boxes</h3>
+              <p className="text-xs text-neutral-400 mb-4 leading-relaxed">
+                The viewport crop rectangle represents normalized relative offsets on the transformed canvas. Resizing is constrained when the aspect ratio is locked.
               </p>
+              <div className="bg-neutral-950 border border-white/5 rounded-xl p-4 flex items-center justify-center shadow-inner mb-4">
+                <svg viewBox="0 0 400 240" className="w-full max-w-lg mx-auto bg-neutral-900/50 border border-white/5 rounded-lg">
+                  <defs>
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.02)" strokeWidth="1" />
+                    </pattern>
+                  </defs>
+                  <rect width="100%" height="100%" fill="url(#grid)" />
+                  <rect x="20" y="20" width="360" height="200" rx="8" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="1.5" strokeDasharray="4 4" />
+                  <text x="25" y="35" className="fill-neutral-400 text-[9px] font-mono">Viewport Stage Bounds (stageW x stageH)</text>
 
-              <div className="bg-neutral-950 border border-white/10 rounded-xl p-4 flex items-center justify-center shadow-inner mb-6">
-                <img
-                  src="/cropper-sketch.png"
-                  alt="Viewport Math Coordinate diagram"
-                  className="max-h-[420px] object-contain rounded-lg shadow-lg"
-                />
+                  <circle cx="200" cy="120" r="3" fill="#6366f1" />
+                  <circle cx="200" cy="120" r="8" fill="none" stroke="#6366f1" strokeWidth="1" strokeDasharray="2 2" />
+                  <text x="210" y="123" className="fill-indigo-400 text-[8px] font-mono">Center Pivot (stageW/2, stageH/2)</text>
+
+                  <g transform="translate(200, 120) rotate(12) scale(0.9)">
+                    <rect x="-120" y="-75" width="240" height="150" rx="4" fill="rgba(6, 182, 212, 0.03)" stroke="rgba(6, 182, 212, 0.25)" strokeWidth="1" />
+                    <text x="-112" y="-58" className="fill-cyan-400 text-[8px] font-mono">Rotated/Scaled Image</text>
+                  </g>
+
+                  <rect x="100" y="60" width="180" height="110" rx="4" fill="rgba(99, 102, 241, 0.08)" stroke="#6366f1" strokeWidth="1.5" />
+                  <line x1="160" y1="60" x2="160" y2="170" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="1" strokeDasharray="2 2" />
+                  <line x1="220" y1="60" x2="220" y2="170" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="1" strokeDasharray="2 2" />
+                  <line x1="100" y1="96" x2="280" y2="96" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="1" strokeDasharray="2 2" />
+                  <line x1="100" y1="133" x2="280" y2="133" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="1" strokeDasharray="2 2" />
+
+                  <rect x="98" y="58" width="4" height="4" fill="#fff" stroke="#6366f1" strokeWidth="1" />
+                  <rect x="278" y="58" width="4" height="4" fill="#fff" stroke="#6366f1" strokeWidth="1" />
+                  <rect x="98" y="168" width="4" height="4" fill="#fff" stroke="#6366f1" strokeWidth="1" />
+                  <rect x="278" y="168" width="4" height="4" fill="#fff" stroke="#6366f1" strokeWidth="1" />
+
+                  <text x="106" y="52" className="fill-brand-300 text-[8px] font-mono">Crop Origin (crop.x, crop.y)</text>
+                  <text x="130" y="181" className="fill-brand-300 text-[8px] font-mono">Size: crop.width x crop.height [0.0 to 1.0]</text>
+                </svg>
               </div>
+            </div>
 
-              <div className="space-y-4 text-neutral-400 text-xs leading-relaxed">
-                <h3 className="text-white font-semibold">Transform Matrix Flow</h3>
+            {/* Diagram 2: Affine Transformation Matrix Pipeline */}
+            <div className="glass rounded-2xl p-6 border border-white/10">
+              <h3 className="text-sm font-semibold text-white mb-2">2. Affine Transformation Pipeline</h3>
+              <p className="text-xs text-neutral-400 mb-4 leading-relaxed">
+                Applying transformations centered around the center point pivot requires composing a sequence of translation, rotation, and scaling matrices.
+              </p>
+              <div className="bg-neutral-950 border border-white/5 rounded-xl p-4 flex items-center justify-center shadow-inner mb-4">
+                <svg viewBox="0 0 540 130" className="w-full max-w-2xl mx-auto bg-neutral-900/50 border border-white/5 rounded-lg">
+                  <g transform="translate(10, 15)">
+                    <rect x="0" y="10" width="80" height="60" rx="4" fill="rgba(255,255,255,0.01)" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                    <text x="40" y="45" textAnchor="middle" className="fill-neutral-400 text-[9px] font-mono">Raw Image</text>
+                    <text x="40" y="82" textAnchor="middle" className="fill-neutral-500 text-[7px] font-mono">At (0,0)</text>
+                  </g>
+
+                  <path d="M 105 45 L 125 45" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                  <text x="115" y="38" textAnchor="middle" className="fill-indigo-400 text-[7px] font-mono">T(W/2, H/2)</text>
+
+                  <g transform="translate(140, 15)">
+                    <rect x="0" y="10" width="80" height="60" rx="4" fill="rgba(99, 102, 241, 0.03)" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="1" />
+                    <path d="M 40 30 L 40 50 M 30 40 L 50 40" stroke="#6366f1" strokeWidth="0.8" />
+                    <text x="40" y="82" textAnchor="middle" className="fill-indigo-300 text-[7px] font-mono">1. Shift to Center</text>
+                  </g>
+
+                  <path d="M 235 45 L 255 45" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                  <text x="245" y="38" textAnchor="middle" className="fill-cyan-400 text-[7px] font-mono">Rotate(&theta;)</text>
+
+                  <g transform="translate(270, 15)">
+                    <rect x="0" y="10" width="80" height="60" rx="4" fill="rgba(6, 182, 212, 0.03)" stroke="rgba(6, 182, 212, 0.2)" strokeWidth="1" transform="rotate(12 40 40)" />
+                    <path d="M 40 30 L 40 50 M 30 40 L 50 40" stroke="#06b6d4" strokeWidth="0.8" />
+                    <text x="40" y="82" textAnchor="middle" className="fill-cyan-300 text-[7px] font-mono">2. Rotate Grid</text>
+                  </g>
+
+                  <path d="M 365 45 L 385 45" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+                  <text x="375" y="38" textAnchor="middle" className="fill-emerald-400 text-[7px] font-mono">Scale(zoom)</text>
+
+                  <g transform="translate(400, 15)">
+                    <rect x="12" y="19" width="56" height="42" rx="4" fill="rgba(16, 185, 129, 0.03)" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1" transform="rotate(12 40 40)" />
+                    <circle cx="40" cy="40" r="1.5" fill="#10b981" />
+                    <text x="40" y="82" textAnchor="middle" className="fill-emerald-300 text-[7px] font-mono">3. Draw Image</text>
+                  </g>
+                </svg>
+              </div>
+              <div className="bg-white/[0.01] border border-white/5 rounded-xl p-4 text-[11px] text-neutral-400 space-y-2">
+                <div className="font-semibold text-white">Transform Matrix Formula:</div>
+                <div className="font-mono text-indigo-300 overflow-x-auto whitespace-nowrap bg-neutral-950/50 p-2.5 rounded-lg border border-white/5">
+                  M = T(stageW / 2, stageH / 2) &times; R(&theta;) &times; S(zoom &times; flipH, zoom &times; flipV) &times; T(-naturalWidth / 2, -naturalHeight / 2)
+                </div>
                 <p>
-                  To convert panning offsets, zoom levels, and rotations into a final image slice:
+                  To prevent rotation clipping, the source image coordinates are translated back by negative half-dimensions <code>(-naturalW/2, -naturalH/2)</code> after translation, rotation, and scaling are set on the canvas viewport.
                 </p>
-                <ul className="list-disc pl-5 space-y-2">
-                  <li><strong>Translation Step:</strong> Translate the canvas rendering origin to the center of the crop viewport area. This aligns the rotation pivots correctly.</li>
-                  <li><strong>Rotation Step:</strong> Rotate the canvas rendering viewport by the rotation angle.</li>
-                  <li><strong>Scaling Step:</strong> Scale the canvas grid according to the calculated zoom factor.</li>
-                  <li><strong>Export Render:</strong> Draw the source image with the calculated scale/offset values, then clip and fetch the PNG data using <code>canvas.toDataURL()</code>.</li>
-                </ul>
               </div>
+            </div>
+
+            {/* Diagram 3: Video Recording Seeking Pipeline */}
+            <div className="glass rounded-2xl p-6 border border-white/10">
+              <h3 className="text-sm font-semibold text-white mb-2">3. Frame-by-Frame Video Crop Architecture</h3>
+              <p className="text-xs text-neutral-400 mb-4 leading-relaxed">
+                Rather than playing the video in real-time, which drops frames when performance fluctuates and can trigger browser crashes, exports use programmatic, seeked-event frame stepping.
+              </p>
+              <div className="bg-neutral-950 border border-white/5 rounded-xl p-4 flex items-center justify-center shadow-inner mb-4">
+                <svg viewBox="0 0 460 115" className="w-full max-w-xl mx-auto bg-neutral-900/50 border border-white/5 rounded-lg">
+                  <g transform="translate(15, 10)">
+                    <rect x="0" y="10" width="80" height="42" rx="4" fill="rgba(239, 68, 68, 0.03)" stroke="rgba(239, 68, 68, 0.2)" strokeWidth="1" />
+                    <text x="40" y="28" textAnchor="middle" className="fill-red-400 text-[8px] font-bold font-mono">PAUSE PLAYBACK</text>
+                    <text x="40" y="40" textAnchor="middle" className="fill-neutral-400 text-[7px] font-mono">Freeze video</text>
+                  </g>
+
+                  <path d="M 100 31 L 120 31" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+
+                  <g transform="translate(125, 10)">
+                    <rect x="0" y="10" width="80" height="42" rx="4" fill="rgba(99, 102, 241, 0.03)" stroke="rgba(99, 102, 241, 0.2)" strokeWidth="1" />
+                    <text x="40" y="28" textAnchor="middle" className="fill-indigo-400 text-[8px] font-bold font-mono">SEEK TO TIME</text>
+                    <text x="40" y="40" textAnchor="middle" className="fill-neutral-400 text-[7px] font-mono">Set currentTime</text>
+                  </g>
+
+                  <path d="M 210 31 L 230 31" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+
+                  <g transform="translate(235, 10)">
+                    <rect x="0" y="10" width="90" height="42" rx="4" fill="rgba(245, 158, 11, 0.03)" stroke="rgba(245, 158, 11, 0.2)" strokeWidth="1" />
+                    <text x="45" y="28" textAnchor="middle" className="fill-amber-400 text-[8px] font-bold font-mono">WAIT 'SEEKED'</text>
+                    <text x="45" y="40" textAnchor="middle" className="fill-neutral-400 text-[7px] font-mono">Wait decode</text>
+                  </g>
+
+                  <path d="M 330 31 L 350 31" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
+
+                  <g transform="translate(355, 10)">
+                    <rect x="0" y="10" width="90" height="42" rx="4" fill="rgba(16, 185, 129, 0.03)" stroke="rgba(16, 185, 129, 0.2)" strokeWidth="1" />
+                    <text x="45" y="28" textAnchor="middle" className="fill-emerald-400 text-[8px] font-bold font-mono">DRAW &amp; RECORD</text>
+                    <text x="45" y="40" textAnchor="middle" className="fill-neutral-400 text-[7px] font-mono">Record canvas</text>
+                  </g>
+
+                  <path d="M 400 55 L 400 70 L 165 70 L 165 55" fill="none" stroke="rgba(99, 102, 241, 0.3)" strokeWidth="1" strokeDasharray="3 3" />
+                  <text x="282" y="80" textAnchor="middle" className="fill-indigo-300 text-[8px] font-mono">Loop for all frames (30 FPS)</text>
+                </svg>
+              </div>
+              <p className="text-xs text-neutral-400 leading-relaxed">
+                By rendering frame-by-frame and pausing real-time playback, the cropper guarantees that every single video frame is rendered exactly once, preventing audio playing overhead, eliminating frame duplication, and ensuring the browser never exhausts its execution buffers (preventing "Aw, snap!" errors).
+              </p>
             </div>
           </div>
         )}

@@ -23,9 +23,10 @@ export interface HistorySnapshot {
 }
 
 export interface CropState {
-  // Image
+  // Media
   imageSrc: string | null
-  imageElement: HTMLImageElement | null
+  imageElement: HTMLImageElement | HTMLVideoElement | null
+  mediaType: 'image' | 'video'
   naturalWidth: number
   naturalHeight: number
 
@@ -63,7 +64,7 @@ export interface CropState {
   effectiveAdjustments: () => Adjustments
 
   // Actions
-  setImage: (src: string, el: HTMLImageElement) => void
+  setImage: (src: string, el: HTMLImageElement | HTMLVideoElement, mediaType?: 'image' | 'video') => void
   clearImage: () => void
   setStageSize: (w: number, h: number) => void
   setCrop: (crop: CropRect, record?: boolean) => void
@@ -153,6 +154,7 @@ function normalizeRotation(deg: number): number {
 export const useCropStore = create<CropState>((set, get) => ({
   imageSrc: null,
   imageElement: null,
+  mediaType: 'image',
   naturalWidth: 0,
   naturalHeight: 0,
   stageWidth: 0,
@@ -186,12 +188,13 @@ export const useCropStore = create<CropState>((set, get) => ({
     return mergeAdjustments(baseAdjustments, preset.adjustments)
   },
 
-  setImage: (src, el) =>
+  setImage: (src, el, mediaType = 'image') =>
     set(() => ({
       imageSrc: src,
       imageElement: el,
-      naturalWidth: el.naturalWidth,
-      naturalHeight: el.naturalHeight,
+      mediaType,
+      naturalWidth: el instanceof HTMLVideoElement ? el.videoWidth : el.naturalWidth,
+      naturalHeight: el instanceof HTMLVideoElement ? el.videoHeight : el.naturalHeight,
       crop: { x: 0.05, y: 0.05, width: 0.9, height: 0.9 },
       rotation: 0,
       flipH: false,
@@ -206,6 +209,7 @@ export const useCropStore = create<CropState>((set, get) => ({
     set(() => ({
       imageSrc: null,
       imageElement: null,
+      mediaType: 'image',
       naturalWidth: 0,
       naturalHeight: 0,
       past: [],

@@ -8,6 +8,7 @@
 [![license](https://img.shields.io/badge/license-MIT-22c55e)](./LICENSE)
 [![types](https://img.shields.io/badge/types-included-3178c6)](./dist/index.d.ts)
 ![react](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)
+[![bundle size](https://img.shields.io/bundlephobia/minzip/react-modern-image-cropper?color=ff69b4)](https://bundlephobia.com/package/react-modern-image-cropper)
 
 </div>
 
@@ -32,7 +33,7 @@
 | 💾 **Export** | PNG / JPEG / WebP with a live preview modal & savings readout |
 | 🌗 **Themes** | Light / dark, fully **TypeScript** typed, headless-friendly |
 
-> 📚 **Detailed docs:** [API Reference](./docs/API.md) · [Styling Guide](./docs/STYLING.md) · [Examples](./docs/EXAMPLES.md)
+> 📚 **Detailed docs:** [API Reference](./docs/API.md) · [Styling Guide](./docs/STYLING.md) · [Examples](./docs/EXAMPLES.md) · [⚡ Live Playground (StackBlitz)](https://stackblitz.com/github/ram-singh1/react-modern-image-cropper/tree/main)
 
 ---
 
@@ -267,6 +268,15 @@ hooks, store actions, and utilities).
 
 ---
 
+## 📦 Bundle Size & Optimization
+
+Although `react-modern-image-cropper` is packed with professional features, it is built to keep your initial page loads fast:
+* **Lazy-loaded AI Auto-Crop:** The heavy MediaPipe model and tasks-vision libraries are dynamically imported only when the user clicks the "AI Auto-Crop" button. If not used, they add **zero** weight to your bundle.
+* **Tree-shaken dependencies:** Standard packages like Lucide Icons and Framer Motion are fully tree-shaken, ensuring you only bundle the modules actually rendered.
+* **Zero Tailwind Overhead:** The component pre-compiles styles into a standalone sheet. You do not need to install or run Tailwind in your host application.
+
+---
+
 ## 🎨 Styling & theming
 
 The component is themed with CSS and a small set of accent variables — you can
@@ -279,12 +289,79 @@ restyle it without forking. Full details in the [Styling Guide](./docs/STYLING.m
 
 ---
 
+## 🌐 Next.js & SSR Integration Guide
+
+Because `react-modern-image-cropper` relies on HTML5 Canvas APIs, standard mouse/touch window events, and browser-side MediaPipe decoders, it **must run on the client side only**.
+
+If you import the component directly into an SSR page in Next.js, you will encounter a `window is not defined` or `HTMLCanvasElement is not defined` error. Here is how to load it safely using Next.js App Router and Pages Router:
+
+### 1. App Router (Next.js 13+)
+
+Create a client wrapper for the cropper (e.g., `components/CropperWrapper.tsx`):
+```tsx
+'use client'
+
+import { Cropper } from 'react-modern-image-cropper'
+import 'react-modern-image-cropper/styles.css'
+
+export default function CropperWrapper(props: React.ComponentProps<typeof Cropper>) {
+  return <Cropper {...props} />
+}
+```
+
+Then load it dynamically in your page with SSR disabled:
+```tsx
+import dynamic from 'next/dynamic'
+
+const DynamicCropper = dynamic(() => import('@/components/CropperWrapper'), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[500px] flex items-center justify-center bg-neutral-900 text-white/50 rounded-3xl">
+      Loading editor...
+    </div>
+  ),
+})
+
+export default function EditProfilePage() {
+  return (
+    <main className="max-w-2xl mx-auto p-8">
+      <h1 className="text-2xl font-bold mb-4">Edit Profile Picture</h1>
+      <div className="h-[600px] rounded-3xl overflow-hidden border border-neutral-800">
+        <DynamicCropper
+          aspectRatio={1}
+          onCrop={(res) => console.log('Cropped blob:', res.blob)}
+        />
+      </div>
+    </main>
+  )
+}
+```
+
+### 2. Pages Router
+
+Use `next/dynamic` to load the editor directly:
+```tsx
+import dynamic from 'next/dynamic'
+
+const Cropper = dynamic(
+  () => import('react-modern-image-cropper').then((mod) => mod.Cropper),
+  { ssr: false }
+)
+
+export default function MyPage() {
+  return (
+    <div style={{ height: 600 }}>
+      <Cropper onCrop={(r) => console.log(r)} />
+    </div>
+  )
+}
+```
+
+---
+
 ## 🖼️ Framework notes
 
-- **Next.js / SSR:** the editor is client-only (it uses `canvas` and `window`).
-  Render it in a Client Component (`'use client'`) or with
-  `next/dynamic(..., { ssr: false })`. See [Examples](./docs/EXAMPLES.md).
-- **Vite / CRA:** no extra config — just import the component and the stylesheet.
+- **Vite / Create React App:** No special configuration required. Simply import `<Cropper />` and `styles.css` directly.
 
 ---
 

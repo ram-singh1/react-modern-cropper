@@ -5,7 +5,7 @@ import { useImageLoader } from '@/hooks/useImageLoader'
 import { cn } from '@/lib/utils'
 
 interface ImageDropZoneProps {
-  onLoad?: (img: HTMLImageElement) => void
+  onLoad?: (media: HTMLImageElement | HTMLVideoElement) => void
 }
 
 export function ImageDropZone({ onLoad }: ImageDropZoneProps) {
@@ -63,22 +63,21 @@ export function ImageDropZone({ onLoad }: ImageDropZoneProps) {
         </div>
         <div>
           <p className="text-base font-semibold text-neutral-800 dark:text-white">
-            {dragging ? 'Drop to upload' : 'Drag & drop an image'}
+            {dragging ? 'Drop to upload' : 'Drag & drop an image or video'}
           </p>
           <p className="mt-1 text-sm text-neutral-500 dark:text-white/50">
-            or click to browse · PNG, JPG, WebP
+            or click to browse · Images & Videos (MP4, WebM...)
           </p>
         </div>
         {error && <p className="text-xs text-red-400">{error}</p>}
-
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-        />
       </motion.div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*,video/*"
+        className="hidden"
+        onChange={(e) => handleFiles(e.target.files)}
+      />
     </div>
   )
 }

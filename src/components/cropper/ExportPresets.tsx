@@ -29,6 +29,33 @@ export const EXPORT_PRESETS: ExportPreset[] = [
   },
 ]
 
+export const VIDEO_EXPORT_PRESETS: ExportPreset[] = [
+  {
+    id: 'webm-hq',
+    label: 'WebM · High Quality',
+    description: 'VP9/VP8, transparency supported',
+    settings: { format: 'video/webm', quality: 0.95 },
+  },
+  {
+    id: 'webm-web',
+    label: 'WebM · Web Optimized',
+    description: 'Balanced quality and file size',
+    settings: { format: 'video/webm', quality: 0.8 },
+  },
+  {
+    id: 'mp4-hq',
+    label: 'MP4 · High Quality',
+    description: 'Highly compatible format',
+    settings: { format: 'video/mp4', quality: 0.95 },
+  },
+  {
+    id: 'mp4-web',
+    label: 'MP4 · Web Optimized',
+    description: 'Balanced streaming settings',
+    settings: { format: 'video/mp4', quality: 0.8 },
+  },
+]
+
 interface ExportPresetsProps {
   selectedId: string
   onSelect: (preset: ExportPreset) => void
@@ -36,11 +63,15 @@ interface ExportPresetsProps {
 
 export function ExportPresets({ selectedId, onSelect }: ExportPresetsProps) {
   const imageSrc = useCropStore((s) => s.imageSrc)
+  const mediaType = useCropStore((s) => s.mediaType)
+  
   if (!imageSrc) return null
+
+  const presets = mediaType === 'video' ? VIDEO_EXPORT_PRESETS : EXPORT_PRESETS
 
   return (
     <div className="grid grid-cols-2 gap-2">
-      {EXPORT_PRESETS.map((preset) => {
+      {presets.map((preset) => {
         const active = preset.id === selectedId
         return (
           <button

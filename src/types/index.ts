@@ -72,7 +72,7 @@ export interface AspectRatioOption {
   icon?: string
 }
 
-export type ExportFormat = 'image/png' | 'image/jpeg' | 'image/webp'
+export type ExportFormat = 'image/png' | 'image/jpeg' | 'image/webp' | 'video/webm' | 'video/mp4'
 
 /** Shape of the exported crop. */
 export type CropShape = 'rect' | 'round'
@@ -99,6 +99,8 @@ export interface ExportSettings {
   shape?: CropShape
   /** advanced compression controls */
   compression?: CompressionOptions
+  /** grabs a single frame preview for videos if true */
+  previewOnly?: boolean
 }
 
 export interface ExportPreset {
@@ -149,8 +151,8 @@ export interface CropperProps {
   shape?: CropShape
   /** Fired whenever the user produces a final crop via export. */
   onCrop?: (result: CropResult) => void
-  /** Fired when a new image is loaded into the editor. */
-  onImageLoad?: (image: HTMLImageElement) => void
+  /** Fired when a new image or video is loaded into the editor. */
+  onImageLoad?: (media: HTMLImageElement | HTMLVideoElement) => void
   /** Start in light or dark theme. */
   defaultTheme?: Theme
   /** Disable the AI auto-crop feature (skips MediaPipe download). */
