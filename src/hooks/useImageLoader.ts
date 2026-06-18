@@ -1,45 +1,79 @@
 import { useCallback } from 'react'
 import { useCropStore } from '@/store/cropStore'
 
-/** Load an image from a File, Blob, or URL string into the editor store. */
-export function useImageLoader(onLoad?: (img: HTMLImageElement) => void) {
+const isVideoUrl = (url: string) => {
+  if (url.startsWith('data:video/')) return true
+  if (url.startsWith('blob:') && url.includes('/video-')) return true
+  const cleanUrl = url.split(/[?#]/)[0]
+  return /\.(mp4|webm|ogg|mov|mkv|3gp|avi)$/i.test(cleanUrl)
+}
+
+/** Load an image or video from a File, Blob, or URL string into the editor store. */
+export function useImageLoader(onLoad?: (media: HTMLImageElement | HTMLVideoElement) => void) {
   const setImage = useCropStore((s) => s.setImage)
   const setLoading = useCropStore((s) => s.setLoading)
 
   const loadFromSrc = useCallback(
-    (src: string) =>
-      new Promise<HTMLImageElement>((resolve, reject) => {
-        setLoading(true, 'Loading image…')
-        const img = new Image()
-        img.crossOrigin = 'anonymous'
-        img.onload = () => {
-          setImage(src, img)
-          setLoading(false)
-          onLoad?.(img)
-          resolve(img)
+    (src: string, mediaType?: 'image' | 'video') =>
+      new Promise<HTMLImageElement | HTMLVideoElement>((resolve, reject) => {
+        const type = mediaType || (isVideoUrl(src) ? 'video' : 'image')
+        setLoading(true, `Loading ${type}…`)
+
+        if (type === 'video') {
+          const video = document.createElement('video')
+          video.crossOrigin = 'anonymous'
+          video.preload = 'auto'
+          video.muted = true
+          video.playsInline = true
+          video.onloadedmetadata = () => {
+            setImage(src, video, 'video')
+            setLoading(false)
+            onLoad?.(video)
+            resolve(video)
+          }
+          video.onerror = () => {
+            setLoading(false)
+            reject(new Error('Failed to load video'))
+          }
+          video.src = src
+        } else {
+          const img = new Image()
+          img.crossOrigin = 'anonymous'
+          img.onload = () => {
+            setImage(src, img, 'image')
+            setLoading(false)
+            onLoad?.(img)
+            resolve(img)
+          }
+          img.onerror = () => {
+            setLoading(false)
+            reject(new Error('Failed to load image'))
+          }
+          img.src = src
         }
-        img.onerror = () => {
-          setLoading(false)
-          reject(new Error('Failed to load image'))
-        }
-        img.src = src
       }),
     [setImage, setLoading, onLoad],
   )
 
   const loadFromFile = useCallback(
     (file: File) =>
-      new Promise<HTMLImageElement>((resolve, reject) => {
-        if (!file.type.startsWith('image/')) {
-          reject(new Error('Not an image file'))
+      new Promise<HTMLImageElement | HTMLVideoElement>((resolve, reject) => {
+        const isVideo = file.type.startsWith('video/')
+        const isImage = file.type.startsWith('image/')
+        if (!isImage && !isVideo) {
+          reject(new Error('Unsupported file type. Please upload an image or video.'))
           return
         }
-        const reader = new FileReader()
-        reader.onload = () => {
-          loadFromSrc(reader.result as string).then(resolve).catch(reject)
-        }
-        reader.onerror = () => reject(new Error('Failed to read file'))
-        reader.readAsDataURL(file)
+        
+        const url = URL.createObjectURL(file)
+        loadFromSrc(url, isVideo ? 'video' : 'image')
+          .then((media) => {
+            resolve(media)
+          })
+          .catch((err) => {
+            URL.revokeObjectURL(url)
+            reject(err)
+          })
       }),
     [loadFromSrc],
   )

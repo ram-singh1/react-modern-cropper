@@ -17,6 +17,7 @@ import type { ExportPreset, BulkCompressorProps } from '@/types'
 import { EXPORT_PRESETS } from './ExportPresets'
 import { CropArea } from './CropArea'
 import { ToolbarBottom } from './ToolbarBottom'
+import { ThemeToggle } from '@/components/common/ThemeToggle'
 
 interface UsageStats {
   date: string
@@ -25,6 +26,7 @@ interface UsageStats {
 
 export function BulkCompressor({ showImageSlider = true }: BulkCompressorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const theme = useCropStore((s) => s.theme)
   
   // State
   const [images, setImages] = useState<File[]>([])
@@ -279,25 +281,27 @@ export function BulkCompressor({ showImageSlider = true }: BulkCompressorProps) 
   }
 
   return (
-    <div className={cn(
-      "glass rounded-3xl p-6 border transition-all duration-500",
-      premium 
-        ? "border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.03] to-transparent shadow-[0_0_50px_-12px_rgba(245,158,11,0.12)] dark:shadow-[0_0_50px_-12px_rgba(245,158,11,0.06)] text-neutral-800 dark:text-neutral-100"
-        : "border-black/10 dark:border-white/5 bg-white/40 dark:bg-neutral-900/40 text-neutral-800 dark:text-neutral-100"
-    )}>
-      {/* Header info */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/10 dark:border-white/10 pb-4">
-        <div>
-          <h2 className="flex items-center gap-2 text-base font-bold text-neutral-900 dark:text-white">
-            <Sparkles className="h-5 w-5 text-brand-500" />
-            Bulk Compressor & Editor Studio
-          </h2>
-          <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1">
-            Batch crop, apply filter adjustments, and compress multiple images to any target size simultaneously.
-          </p>
-        </div>
-        <div className="flex items-center gap-2.5">
-          {premium ? (
+    <div className={theme === 'dark' ? 'dark' : ''}>
+      <div className={cn(
+        "glass rounded-3xl p-6 border transition-all duration-500",
+        premium 
+          ? "border-amber-500/30 dark:border-amber-500/20 bg-gradient-to-b from-amber-500/[0.03] to-transparent shadow-[0_0_50px_-12px_rgba(245,158,11,0.12)] dark:shadow-[0_0_50px_-12px_rgba(245,158,11,0.06)] text-neutral-800 dark:text-neutral-100"
+          : "border-black/10 dark:border-white/5 bg-white/40 dark:bg-neutral-900/40 text-neutral-800 dark:text-neutral-100"
+      )}>
+        {/* Header info */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-black/10 dark:border-white/10 pb-4">
+          <div>
+            <h2 className="flex items-center gap-2 text-base font-bold text-neutral-900 dark:text-white">
+              <Sparkles className="h-5 w-5 text-brand-500" />
+              Bulk Compressor & Editor Studio
+            </h2>
+            <p className="text-xs text-neutral-600 dark:text-neutral-300 mt-1">
+              Batch crop, apply filter adjustments, and compress multiple images to any target size simultaneously.
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle className="h-8 w-8 text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-white mr-1" />
+            {premium ? (
             <span className="flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-500 px-3.5 py-1.5 text-xs font-bold text-white shadow-glow border border-amber-400/30">
               <Crown className="h-3.5 w-3.5" />
               VIP Premium Access
@@ -684,6 +688,7 @@ export function BulkCompressor({ showImageSlider = true }: BulkCompressorProps) 
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </div>
   )
 }

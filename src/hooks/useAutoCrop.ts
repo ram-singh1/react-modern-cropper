@@ -37,7 +37,7 @@ export function useAutoCrop() {
   const autoCrop = useCallback(async () => {
     const s = store.getState()
     const { imageElement, naturalWidth, naturalHeight, aspectRatio, stageWidth, stageHeight } = s
-    if (!imageElement || !naturalWidth) return
+    if (!imageElement || !naturalWidth || !(imageElement instanceof HTMLImageElement)) return
 
     setDetecting(true)
     s.setLoading(true, 'Analyzing image…')

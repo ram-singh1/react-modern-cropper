@@ -47,6 +47,7 @@ export function Cropper(props: CropperProps) {
   const hasControlledSrc = Object.prototype.hasOwnProperty.call(props, 'src')
 
   const imageSrc = useCropStore((s) => s.imageSrc)
+  const mediaType = useCropStore((s) => s.mediaType)
   const theme = useCropStore((s) => s.theme)
   const isLoading = useCropStore((s) => s.isLoading)
   const loadingMessage = useCropStore((s) => s.loadingMessage)
@@ -151,7 +152,7 @@ export function Cropper(props: CropperProps) {
         {imageSrc && (
           <>
             <div className="flex items-center gap-2 border-t border-black/10 dark:border-white/10 px-4 py-3 sm:px-6">
-              {!disableAutoCrop && (
+              {!disableAutoCrop && mediaType !== 'video' && (
                 <motion.button
                   type="button"
                   whileTap={{ scale: 0.97 }}
@@ -224,6 +225,7 @@ function HeaderButton({
     <button
       type="button"
       title={title}
+      aria-label={title}
       onClick={onClick}
       disabled={disabled}
       className={cn(

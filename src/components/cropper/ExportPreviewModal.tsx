@@ -7,7 +7,7 @@ import { downloadBlob, filenameFor } from '@/utils/export'
 import { cn, formatBytes, simplifyRatio } from '@/lib/utils'
 import type { CompressionOptions, CropResult, ExportPreset } from '@/types'
 import { Slider } from '@/components/common/Slider'
-import { ExportPresets, EXPORT_PRESETS } from './ExportPresets'
+import { ExportPresets, EXPORT_PRESETS, VIDEO_EXPORT_PRESETS } from './ExportPresets'
 
 interface ExportPreviewModalProps {
   open: boolean
@@ -24,10 +24,12 @@ export function ExportPreviewModal({
 }: ExportPreviewModalProps) {
   const { exportCrop } = useCropState()
   const cropShape = useCropStore((s) => s.cropShape)
+  const mediaType = useCropStore((s) => s.mediaType)
 
   const [preset, setPreset] = useState<ExportPreset>(EXPORT_PRESETS[0])
   const [result, setResult] = useState<CropResult | null>(null)
   const [rendering, setRendering] = useState(false)
+  const [downloading, setDownloading] = useState(false)
 
   // Compression controls
   const [compress, setCompress] = useState(defaultCompression?.enabled ?? false)
@@ -35,6 +37,13 @@ export function ExportPreviewModal({
   const [maxDimension, setMaxDimension] = useState(
     defaultCompression?.maxDimension ?? 2048,
   )
+
+  // Sync preset if mediaType changes
+  useEffect(() => {
+    if (open) {
+      setPreset(mediaType === 'video' ? VIDEO_EXPORT_PRESETS[0] : EXPORT_PRESETS[0])
+    }
+  }, [open, mediaType])
 
   // Re-render preview whenever inputs change.
   useEffect(() => {
@@ -45,6 +54,7 @@ export function ExportPreviewModal({
       exportCrop({
         ...preset.settings,
         shape: cropShape,
+        previewOnly: true, // We want a fast frame snapshot for video previews
         compression: compress
           ? { enabled: true, maxSizeKB, maxDimension }
           : undefined,
@@ -60,11 +70,29 @@ export function ExportPreviewModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, preset, cropShape, compress, maxSizeKB, maxDimension])
 
-  const handleDownload = () => {
-    if (!result) return
-    downloadBlob(result.blob, filenameFor(result.format))
-    onExported?.(result)
-    onClose()
+  const handleDownload = async () => {
+    if (mediaType === 'video') {
+      setDownloading(true)
+      try {
+        const finalResult = await exportCrop({
+          ...preset.settings,
+          shape: cropShape,
+          previewOnly: false, // Run full video recording
+        })
+        downloadBlob(finalResult.blob, filenameFor(finalResult.format))
+        onExported?.(finalResult)
+        onClose()
+      } catch (e) {
+        console.error('[video export] failed', e)
+      } finally {
+        setDownloading(false)
+      }
+    } else {
+      if (!result) return
+      downloadBlob(result.blob, filenameFor(result.format))
+      onExported?.(result)
+      onClose()
+    }
   }
 
   const ratio = result ? simplifyRatio(result.width, result.height) : null
@@ -89,7 +117,9 @@ export function ExportPreviewModal({
             className="glass-strong max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-3xl"
           >
             <header className="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-neutral-900/80 px-5 py-3.5 backdrop-blur">
-              <h2 className="text-sm font-semibold text-white">Export image</h2>
+              <h2 className="text-sm font-semibold text-white">
+                {mediaType === 'video' ? 'Export video' : 'Export image'}
+              </h2>
               <button
                 type="button"
                 onClick={onClose}
@@ -102,7 +132,7 @@ export function ExportPreviewModal({
             <div className="space-y-4 p-5">
               {/* Preview */}
               <div className="relative flex h-56 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-[conic-gradient(at_50%_50%,#2a2a2a_25%,#1f1f1f_0_50%,#2a2a2a_0_75%,#1f1f1f_0)] bg-[length:24px_24px]">
-                {rendering && (
+                {(rendering || downloading) && (
                   <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40">
                     <Loader2 className="h-6 w-6 animate-spin text-brand-400" />
                   </div>
@@ -127,11 +157,13 @@ export function ExportPreviewModal({
                       {ratio[0]}:{ratio[1]}
                     </span>
                   )}
-                  <span className="font-medium text-white/75">
-                    {formatBytes(result.blob.size)}
-                  </span>
+                  {mediaType !== 'video' && (
+                    <span className="font-medium text-white/75">
+                      {formatBytes(result.blob.size)}
+                    </span>
+                  )}
                   <span className="uppercase">
-                    {result.format.split('/')[1]}
+                    {result.format.split('/')[1]?.split(';')[0]}
                   </span>
                   {savings > 0.01 && (
                     <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-semibold text-emerald-300">
@@ -143,94 +175,97 @@ export function ExportPreviewModal({
 
               <ExportPresets selectedId={preset.id} onSelect={setPreset} />
 
-              {/* Compression panel */}
-              <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5">
-                <button
-                  type="button"
-                  onClick={() => setCompress((v) => !v)}
-                  className="flex w-full items-center justify-between"
-                >
-                  <span className="flex items-center gap-2 text-xs font-semibold text-white/85">
-                    <Zap className="h-4 w-4 text-brand-300" />
-                    Smart compression
-                  </span>
-                  <span
-                    className={cn(
-                      'relative h-5 w-9 rounded-full transition',
-                      compress ? 'bg-brand-500' : 'bg-white/15',
-                    )}
+              {/* Compression panel — only for images */}
+              {mediaType !== 'video' && (
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-3.5">
+                  <button
+                    type="button"
+                    onClick={() => setCompress((v) => !v)}
+                    className="flex w-full items-center justify-between"
                   >
+                    <span className="flex items-center gap-2 text-xs font-semibold text-white/85">
+                      <Zap className="h-4 w-4 text-brand-300" />
+                      Smart compression
+                    </span>
                     <span
                       className={cn(
-                        'absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all',
-                        compress ? 'left-[18px]' : 'left-0.5',
+                        'relative h-5 w-9 rounded-full transition',
+                        compress ? 'bg-brand-500' : 'bg-white/15',
                       )}
-                    />
-                  </span>
-                </button>
-
-                <AnimatePresence initial={false}>
-                  {compress && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden"
                     >
-                      <div className="space-y-4 pt-4">
-                        <Slider
-                          label="Target size"
-                          icon={<Gauge className="h-3.5 w-3.5" />}
-                          value={maxSizeKB}
-                          min={20}
-                          max={3000}
-                          step={10}
-                          unit=" KB"
-                          onChange={setMaxSizeKB}
-                        />
-                        <Slider
-                          label="Max dimension"
-                          icon={<Maximize2 className="h-3.5 w-3.5" />}
-                          value={maxDimension}
-                          min={256}
-                          max={4096}
-                          step={64}
-                          unit=" px"
-                          onChange={setMaxDimension}
-                        />
-                        <p className="text-[10px] leading-relaxed text-white/40">
-                          The encoder searches for the highest quality that fits
-                          your target size. PNG is auto-converted to WebP when a
-                          hard size target is set.
-                        </p>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      <span
+                        className={cn(
+                          'absolute top-0.5 h-4 w-4 rounded-full bg-white transition-all',
+                          compress ? 'left-[18px]' : 'left-0.5',
+                        )}
+                      />
+                    </span>
+                  </button>
+
+                  <AnimatePresence initial={false}>
+                    {compress && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="space-y-4 pt-4">
+                          <Slider
+                            label="Target size"
+                            icon={<Gauge className="h-3.5 w-3.5" />}
+                            value={maxSizeKB}
+                            min={20}
+                            max={3000}
+                            step={10}
+                            unit=" KB"
+                            onChange={setMaxSizeKB}
+                          />
+                          <Slider
+                            label="Max dimension"
+                            icon={<Maximize2 className="h-3.5 w-3.5" />}
+                            value={maxDimension}
+                            min={256}
+                            max={4096}
+                            step={64}
+                            unit=" px"
+                            onChange={setMaxDimension}
+                          />
+                          <p className="text-[10px] leading-relaxed text-white/40">
+                            The encoder searches for the highest quality that fits
+                            your target size. PNG is auto-converted to WebP when a
+                            hard size target is set.
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
             </div>
 
             <footer className="sticky bottom-0 flex gap-2 border-t border-white/10 bg-neutral-900/80 p-4 backdrop-blur">
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/5"
+                disabled={downloading}
+                className="flex-1 rounded-xl border border-white/10 px-4 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/5 disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleDownload}
-                disabled={!result || rendering}
+                disabled={!result || rendering || downloading}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-gradient px-4 py-2.5 text-sm font-semibold text-white shadow-glow transition hover:brightness-110 disabled:opacity-50"
               >
-                {rendering ? (
+                {rendering || downloading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <Download className="h-4 w-4" />
                 )}
-                Download
-                {result && <Check className="h-3.5 w-3.5 opacity-70" />}
+                {downloading ? 'Recording…' : 'Download'}
+                {!downloading && result && <Check className="h-3.5 w-3.5 opacity-70" />}
               </button>
             </footer>
           </motion.div>

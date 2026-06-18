@@ -7,7 +7,7 @@ import { useImageLoader } from './useImageLoader'
  */
 export function usePasteImage(
   enabled = true,
-  onLoad?: (img: HTMLImageElement) => void,
+  onLoad?: (media: HTMLImageElement | HTMLVideoElement) => void,
 ) {
   const { loadFromFile } = useImageLoader(onLoad)
 

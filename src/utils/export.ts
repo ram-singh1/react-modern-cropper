@@ -11,7 +11,7 @@ import { buildFilterString } from './filters'
 import { compressImage } from './compress'
 
 export interface RenderOptions {
-  image: HTMLImageElement
+  image: HTMLImageElement | HTMLVideoElement
   crop: CropRect
   rotation: number
   flipH: boolean
@@ -33,8 +33,8 @@ export async function renderCrop(opts: RenderOptions): Promise<CropResult> {
   const { image, crop, rotation, flipH, flipV, zoom, adjustments, settings } = opts
   const shape: CropShape = settings.shape ?? 'rect'
 
-  const naturalW = image.naturalWidth
-  const naturalH = image.naturalHeight
+  const naturalW = image instanceof HTMLVideoElement ? image.videoWidth : image.naturalWidth
+  const naturalH = image instanceof HTMLVideoElement ? image.videoHeight : image.naturalHeight
   const stageW = naturalW
   const stageH = naturalH
 
@@ -174,6 +174,188 @@ export function downloadBlob(blob: Blob, filename: string): void {
 
 /** Suggest a filename + extension for a given mime format. */
 export function filenameFor(format: string): string {
-  const ext = format.split('/')[1]?.replace('jpeg', 'jpg') ?? 'png'
-  return `cropped-image.${ext}`
+  const parts = format.split('/')
+  const type = parts[0]
+  const ext = parts[1]?.replace('jpeg', 'jpg')?.split(';')[0] ?? (type === 'video' ? 'webm' : 'png')
+  return type === 'video' ? `cropped-video.${ext}` : `cropped-image.${ext}`
+}
+
+export interface RenderVideoOptions {
+  video: HTMLVideoElement
+  crop: CropRect
+  rotation: number
+  flipH: boolean
+  flipV: boolean
+  zoom: number
+  adjustments: Adjustments
+  settings: ExportSettings
+  onProgress?: (progress: number) => void
+}
+
+function getSupportedMimeType(): string {
+  const types = [
+    'video/webm;codecs=vp9',
+    'video/webm;codecs=vp8',
+    'video/webm',
+    'video/mp4',
+  ]
+  for (const t of types) {
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(t)) {
+      return t
+    }
+  }
+  return 'video/webm'
+}
+
+export function renderVideoCrop(opts: RenderVideoOptions): Promise<CropResult> {
+  const { video, crop, rotation, flipH, flipV, zoom, adjustments, settings, onProgress } = opts
+
+  return new Promise(async (resolve, reject) => {
+    try {
+      const originalPlayState = video.paused
+      video.pause()
+
+      const videoW = video.videoWidth
+      const videoH = video.videoHeight
+      const stageW = videoW
+      const stageH = videoH
+
+      const pixelCrop: PixelCrop = {
+        x: Math.round(crop.x * stageW),
+        y: Math.round(crop.y * stageH),
+        width: Math.max(1, Math.round(crop.width * stageW)),
+        height: Math.max(1, Math.round(crop.height * stageH)),
+      }
+
+      const outW = settings.width ?? pixelCrop.width
+      const outH = settings.height ?? pixelCrop.height
+
+      const stage = document.createElement('canvas')
+      stage.width = stageW
+      stage.height = stageH
+      const sctx = stage.getContext('2d')
+      if (!sctx) throw new Error('Could not acquire stage 2D context')
+
+      const out = document.createElement('canvas')
+      out.width = outW
+      out.height = outH
+      const octx = out.getContext('2d')
+      if (!octx) throw new Error('Could not acquire output 2D context')
+
+      const fps = 30
+      const stream = out.captureStream(fps)
+      const mimeType = getSupportedMimeType()
+      const mediaRecorder = new MediaRecorder(stream, { mimeType })
+      const chunks: Blob[] = []
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) {
+          chunks.push(e.data)
+        }
+      }
+
+      mediaRecorder.onstop = () => {
+        const format = mimeType.split(';')[0] as ExportFormat
+        const blob = new Blob(chunks, { type: format })
+        const dataUrl = out.toDataURL('image/jpeg', 0.8)
+
+        if (!originalPlayState) {
+          video.play().catch(() => {})
+        }
+
+        resolve({
+          dataUrl,
+          blob,
+          width: outW,
+          height: outH,
+          pixelCrop,
+          format,
+        })
+      }
+
+      const drawFrame = () => {
+        sctx.clearRect(0, 0, stageW, stageH)
+        sctx.imageSmoothingEnabled = true
+        sctx.imageSmoothingQuality = 'high'
+        sctx.filter = buildFilterString(adjustments)
+
+        sctx.save()
+        sctx.translate(stageW / 2, stageH / 2)
+        sctx.rotate((rotation * Math.PI) / 180)
+        sctx.scale(flipH ? -zoom : zoom, flipV ? -zoom : zoom)
+        sctx.drawImage(video, -videoW / 2, -videoH / 2, videoW, videoH)
+        sctx.restore()
+
+        octx.clearRect(0, 0, outW, outH)
+        octx.imageSmoothingEnabled = true
+        octx.imageSmoothingQuality = 'high'
+        octx.drawImage(
+          stage,
+          pixelCrop.x,
+          pixelCrop.y,
+          pixelCrop.width,
+          pixelCrop.height,
+          0,
+          0,
+          outW,
+          outH,
+        )
+
+        if (settings.shape === 'round') {
+          octx.save()
+          octx.globalCompositeOperation = 'destination-in'
+          octx.beginPath()
+          octx.ellipse(outW / 2, outH / 2, outW / 2, outH / 2, 0, 0, Math.PI * 2)
+          octx.fill()
+          octx.restore()
+        }
+      }
+
+      const duration = video.duration || 1
+      const totalFrames = Math.max(1, Math.floor(duration * fps))
+      const frameDuration = 1 / fps
+      const frameDurationMs = 1000 / fps
+      let currentFrame = 0
+      const startTime = performance.now()
+
+      mediaRecorder.start()
+
+      const processFrame = async () => {
+        if (currentFrame >= totalFrames) {
+          mediaRecorder.stop()
+          return
+        }
+
+        let time = currentFrame * frameDuration
+        if (time > duration) time = duration
+
+        video.currentTime = time
+
+        await new Promise<void>((resolveSeek) => {
+          const onSeeked = () => {
+            video.removeEventListener('seeked', onSeeked)
+            resolveSeek()
+          }
+          video.addEventListener('seeked', onSeeked)
+        })
+
+        drawFrame()
+
+        if (onProgress) {
+          onProgress(currentFrame / totalFrames)
+        }
+
+        currentFrame++
+
+        const targetTime = startTime + currentFrame * frameDurationMs
+        const delay = Math.max(0, targetTime - performance.now())
+        setTimeout(processFrame, delay)
+      }
+
+      processFrame()
+
+    } catch (err) {
+      reject(err)
+    }
+  })
 }
