@@ -1,14 +1,16 @@
 {
-  "version": 3,
+  "version": 2,
+  "buildCommand": "npm run build:demo",
   "builds": [
     {
       "src": "package.json",
-      "use": "@vercel/static-build"
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist-demo"
+      }
     }
   ],
-  "outputDirectory": "dist-demo",
   "routes": [
-    { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
