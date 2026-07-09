@@ -348,7 +348,7 @@ export default function MyEditor() {
                   </p>
                 </div>
                 <a
-                  href="file:///var/www/html/react-modern-image-cropper/docs/ARCHITECTURE_MATH.md"
+                  href="https://github.com/ram-singh1/react-modern-cropper/blob/main/docs/ARCHITECTURE_MATH.md"
                   target="_blank"
                   rel="noreferrer"
                   className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 transition text-xs text-indigo-300"
