@@ -95,22 +95,22 @@ export function Cropper(props: CropperProps) {
 
   return (
     <div className={cn(theme === 'dark' ? 'dark' : '', className)}>
-      <div className="glass-strong relative flex h-full min-h-[560px] w-full flex-col overflow-hidden rounded-3xl text-neutral-800 dark:text-white">
+      <div className="glass-strong relative flex h-full min-h-[420px] w-full flex-col overflow-hidden rounded-3xl text-neutral-800 dark:text-white sm:min-h-[560px]">
         {/* top sheen */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-black/5 dark:via-white/25 to-transparent" />
 
         {/* Header */}
         <header className="flex items-center justify-between gap-2 border-b border-black/10 dark:border-white/10 px-4 py-3 sm:px-5">
-          <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-gradient shadow-glow">
+          <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand-gradient shadow-glow">
               <Sparkles className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-semibold tracking-tight">
+            <span className="truncate text-sm font-semibold tracking-tight">
               Modern Image Cropper
             </span>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-1.5">
             {imageSrc && (
               <>
                 {showUndoRedo && (

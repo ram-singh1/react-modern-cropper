@@ -66,6 +66,10 @@ export function CropArea() {
     if (!el) return
 
     const handleWheel = (e: WheelEvent) => {
+      // Only zoom on an explicit intent (Ctrl/Cmd, or trackpad pinch which sets
+      // ctrlKey). Plain wheel scroll is left to the page so consumers embedding
+      // the cropper can scroll past it to reach the toolbar.
+      if (!e.ctrlKey && !e.metaKey) return
       e.preventDefault()
       const s = useCropStore.getState()
       const delta = e.deltaY < 0 ? 0.15 : -0.15
