@@ -6,7 +6,7 @@
 
 [![npm version](https://img.shields.io/badge/npm-v0.1.0-6366f1)](https://www.npmjs.com/package/react-modern-image-cropper)
 [![license](https://img.shields.io/badge/license-MIT-22c55e)](./LICENSE)
-[![types](https://img.shields.io/badge/types-included-3178c6)](./dist/index.d.ts)
+[![types](https://img.shields.io/badge/types-included-3178c6)](./src/index.ts)
 ![react](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/react-modern-image-cropper?color=ff69b4)](https://bundlephobia.com/package/react-modern-image-cropper)
 
@@ -33,7 +33,7 @@
 | 💾 **Export** | PNG / JPEG / WebP with a live preview modal & savings readout |
 | 🌗 **Themes** | Light / dark, fully **TypeScript** typed, headless-friendly |
 
-> 📚 **Detailed docs:** [API Reference](./docs/API.md) · [Styling Guide](./docs/STYLING.md) · [Examples](./docs/EXAMPLES.md) · [⚡ Live Playground (StackBlitz)](https://stackblitz.com/github/ram-singh1/react-modern-image-cropper/tree/main)
+> 📚 **Detailed docs:** [API Reference](./docs/API.md) · [Styling Guide](./docs/STYLING.md) · [Examples](./docs/EXAMPLES.md) · [⚡ Live Playground (StackBlitz)](https://stackblitz.com/github/ram-singh1/react-modern-cropper/tree/main)
 
 ---
 
