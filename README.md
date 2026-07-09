@@ -5,8 +5,8 @@
 **Modern, feature-rich React image cropper** with AI auto-crop, smart compression, a premium glassmorphic UI, mobile gestures, and professional editing tools.
 
 [![npm version](https://img.shields.io/badge/npm-v0.1.0-6366f1)](https://www.npmjs.com/package/react-modern-image-cropper)
-[![license](https://img.shields.io/badge/license-MIT-22c55e)](./LICENSE)
-[![types](https://img.shields.io/badge/types-included-3178c6)](./src/index.ts)
+[![license](https://img.shields.io/badge/license-MIT-22c55e)](https://github.com/ram-singh1/react-modern-cropper/blob/main/LICENSE)
+[![types](https://img.shields.io/badge/types-included-3178c6)](https://github.com/ram-singh1/react-modern-cropper/blob/main/src/index.ts)
 ![react](https://img.shields.io/badge/React-18%20%7C%2019-61dafb)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/react-modern-image-cropper?color=ff69b4)](https://bundlephobia.com/package/react-modern-image-cropper)
 
@@ -33,7 +33,7 @@
 | 💾 **Export** | PNG / JPEG / WebP with a live preview modal & savings readout |
 | 🌗 **Themes** | Light / dark, fully **TypeScript** typed, headless-friendly |
 
-> 📚 **Detailed docs:** [API Reference](./docs/API.md) · [Styling Guide](./docs/STYLING.md) · [Examples](./docs/EXAMPLES.md) · [⚡ Live Playground (StackBlitz)](https://stackblitz.com/github/ram-singh1/react-modern-cropper/tree/main)
+> 📚 **Detailed docs:** [API Reference](https://github.com/ram-singh1/react-modern-cropper/blob/main/docs/API.md) · [Styling Guide](https://github.com/ram-singh1/react-modern-cropper/blob/main/docs/STYLING.md) · [Examples](https://github.com/ram-singh1/react-modern-cropper/blob/main/docs/EXAMPLES.md) · [⚡ Live Playground (StackBlitz)](https://stackblitz.com/github/ram-singh1/react-modern-cropper/tree/main)
 
 ---
 
@@ -263,7 +263,7 @@ function MyEditor() {
 }
 ```
 
-See the [API Reference](./docs/API.md) for the full export list (components,
+See the [API Reference](https://github.com/ram-singh1/react-modern-cropper/blob/main/docs/API.md) for the full export list (components,
 hooks, store actions, and utilities).
 
 ---
@@ -280,7 +280,7 @@ Although `react-modern-image-cropper` is packed with professional features, it i
 ## 🎨 Styling & theming
 
 The component is themed with CSS and a small set of accent variables — you can
-restyle it without forking. Full details in the [Styling Guide](./docs/STYLING.md):
+restyle it without forking. Full details in the [Styling Guide](https://github.com/ram-singh1/react-modern-cropper/blob/main/docs/STYLING.md):
 
 - Toggle light/dark via the `defaultTheme` prop or `useCropStore().setTheme()`.
 - Override the accent gradient with CSS custom properties.
@@ -379,4 +379,4 @@ npm run preview      # preview a production build
 
 ## 📄 License
 
-[MIT](./LICENSE) © Ram — free for personal and commercial use.
+[MIT](https://github.com/ram-singh1/react-modern-cropper/blob/main/LICENSE) © Ram — free for personal and commercial use.
