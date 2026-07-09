@@ -24,7 +24,7 @@ graph TD
 ```
 
 ### State Management
-All editor state is managed in a single high-performance store: [cropStore.ts](file:///var/www/html/react-modern-image-cropper/src/store/cropStore.ts). 
+All editor state is managed in a single high-performance store: [cropStore.ts](../src/store/cropStore.ts). 
 - **Transforms** (rotation, flipH, flipV, zoom) are stored as raw numbers.
 - **Crop boundaries** (crop) are stored as normalized coordinates (relative values from `0.0` to `1.0` of the stage bounds) to make them resolution-independent.
 - **History snapshots** are pushed to the undo stack (`past`) on action release (pointer up, slider stop).
@@ -105,7 +105,7 @@ Where:
    $$T_{offset} = \begin{bmatrix} 1 & 0 & -\frac{naturalWidth}{2} \\ 0 & 1 & -\frac{naturalHeight}{2} \\ 0 & 0 & 1 \end{bmatrix}$$
 
 ### Implementation in Code
-This transformation is performed in [export.ts:L52-57](file:///var/www/html/react-modern-image-cropper/src/utils/export.ts#L52-L57):
+This transformation is performed in [export.ts:L52-57](../src/utils/export.ts#L52-L57):
 
 ```typescript
 sctx.save()
@@ -184,7 +184,7 @@ If resizing from the bottom-right corner (`se`):
    - $h_{new} = \frac{w_{new}}{R}$
 3. Clamp coordinates to ensure the crop box never exits the stage boundaries ($[0.0, 1.0]$).
 
-The implementation of these resize constraint transforms resides in [geometry.ts](file:///var/www/html/react-modern-image-cropper/src/utils/geometry.ts).
+The implementation of these resize constraint transforms resides in [geometry.ts](../src/utils/geometry.ts).
 
 ---
 
