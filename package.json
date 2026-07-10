@@ -1,6 +1,6 @@
 {
   "name": "react-modern-image-cropper",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Modern React image cropper with AI auto-crop, rotation, filters, adjustments, mobile gestures & premium glassmorphic UI",
   "author": "Ram",
   "license": "MIT",
